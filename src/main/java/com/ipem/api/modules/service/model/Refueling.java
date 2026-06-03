@@ -4,7 +4,7 @@ import com.ipem.api.infrastructure.models.BaseEntity;
 import com.ipem.api.modules.service.model.enums.FuelType;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
+
 
 @Entity
 @Table(name = "refuelings")
@@ -13,7 +13,7 @@ import org.hibernate.annotations.SQLRestriction;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLRestriction("is_active = true")
+
 public class Refueling extends BaseEntity {
 
     @Id

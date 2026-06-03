@@ -332,4 +332,18 @@ body {
     .campo-form select {
         min-height: 44px;
     }
+
+    .config-card {
+        padding: 18px 16px;
+        border-radius: 18px;
+    }
+
+    .botoes-actions {
+        flex-direction: column;
+    }
+
+    .btn-aceitar,
+    .btn-voltar {
+        width: 100%;
+    }
 }

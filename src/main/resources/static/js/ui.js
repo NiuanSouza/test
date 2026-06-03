@@ -1,6 +1,10 @@
 /**
- * js/ui.js
- * Responsável por: Controle de Acesso, Manipulação de Sidebars, Fechamento de Modais e Eventos Globais.
+ * ===================================================================
+ * ARQUIVO: ui.js
+ * REFERÊNCIA GLOBAL: Requer 'basic.js' e 'service.js'
+ * RESPONSABILIDADE: Controle de acesso (Client-Side), manipulação de sidebars,
+ * fechamento de modais, escuta de eventos de teclado e controle do fluxo visual.
+ * ===================================================================
  */
 
 // ===================================================================
@@ -13,25 +17,25 @@ document.addEventListener('keydown', (event) => {
         // Tela de Login
         if (focusedElement.id === 'matricula' || focusedElement.id === 'senha') {
             event.preventDefault();
-            if (typeof btnindex === "function") btnindex();
+            if (typeof window.btnindex === "function") window.btnindex();
         }
 
-        // Tela Inicial (Check-in)
+        // Tela Inicial (Check-in rápido)
         if (focusedElement.id === 'quilometragem-inicial' || focusedElement.id === 'observacoes') {
             event.preventDefault();
-            if (typeof salvarVeiculoInfo === "function") salvarVeiculoInfo();
+            if (typeof window.salvarVeiculoInfo === "function") window.salvarVeiculoInfo();
         }
     }
 });
 
 // ===================================================================
-// 2. INICIALIZAÇÃO DA PÁGINA (Controle de Acesso e Setup)
+// 2. INICIALIZAÇÃO DA PÁGINA E CONTROLE DE ACESSO
 // ===================================================================
 document.addEventListener('DOMContentLoaded', () => {
 
-    // --- CONTROLE DE ACESSO POR PERFIL ---
+    // --- CONTROLE DE ACESSO POR PERFIL (TRAVA DE SEGURANÇA) ---
     const rawPermission = localStorage.getItem("userPermission") || "";
-    const permission = rawPermission.trim().toUpperCase();
+    const permission = rawPermission.trim().toUpperCase().replace("ROLE_", ""); // Padroniza string
     const currentPage = window.location.pathname;
 
     const gestorPages = [
@@ -44,74 +48,83 @@ document.addEventListener('DOMContentLoaded', () => {
     ];
 
     if (permission) {
-        const isGestorPage = gestorPages.some(page => currentPage.endsWith(page));
-        const isTechnicianPage = technicianPages.some(page => currentPage.endsWith(page));
+        const isGestorPage = gestorPages.some(page => currentPage.includes(page));
+        const isTechnicianPage = technicianPages.some(page => currentPage.includes(page));
 
-        // Se for página de gestor, e ele NÃO FOR gestor -> volta pro inicio do técnico
-        if (isGestorPage && permission !== "ADMINISTRATOR" && permission !== "ROLE_ADMINISTRATOR") {
+        // Expulsa técnicos que tentam acessar rotas do gestor
+        if (isGestorPage && permission !== "ADMINISTRATOR" && permission !== "MANAGER") {
             window.location.href = "telainicial.html";
             return;
         }
 
-        // Se for página de técnico, e ele NÃO FOR nem técnico nem gestor -> vai pro inicio do gestor
-        if (isTechnicianPage && permission !== "TECHNICIAN" && permission !== "ADMINISTRATOR" && permission !== "ROLE_ADMINISTRATOR") {
+        // Expulsa gestores (ou perfis inválidos) de rotas exclusivas da interface operacional
+        if (isTechnicianPage && permission !== "TECHNICIAN" && permission !== "ADMINISTRATOR") {
             window.location.href = "telainicial-gestor.html";
             return;
         }
     }
 
-    // --- CARREGAMENTO DE DADOS VISUAIS DA TELA ---
-    if (typeof carregarDadosTelaInicial === "function") {
-        carregarDadosTelaInicial();
+    // Inicializa a exibição de dados da tela principal
+    if (typeof window.carregarDadosTelaInicial === "function") {
+        window.carregarDadosTelaInicial();
     }
 
-    // --- CONFIGURAÇÃO DA SIDEBAR ---
+    // --- CONFIGURAÇÃO DA SIDEBAR E OVERLAYS ---
     const btnMenu = document.getElementById("btnmenu");
     const sidebar = document.getElementById("sidebar");
     const overlaySidebar = document.getElementById("overlayBlurSidebar");
     const btnClose = document.getElementById("btnx");
 
+    const openSidebar = () => {
+        if (sidebar) {
+            sidebar.style.width = "250px"; // Fallback legado
+            sidebar.classList.add("open"); // Nova interface
+        }
+        if (overlaySidebar) overlaySidebar.classList.add("active");
+    };
+
     const closeSidebar = () => {
-        if (sidebar) sidebar.style.width = "0";
+        if (sidebar) {
+            sidebar.style.width = "0"; // Fallback legado
+            sidebar.classList.remove("open"); // Nova interface
+        }
         if (overlaySidebar) overlaySidebar.classList.remove("active");
     };
 
-    if (btnMenu && sidebar) {
-        btnMenu.onclick = () => {
-            sidebar.style.width = "250px";
-            if (overlaySidebar) overlaySidebar.classList.add("active");
-        };
-    }
-
+    if (btnMenu) btnMenu.onclick = openSidebar;
     if (btnClose) btnClose.onclick = closeSidebar;
     if (overlaySidebar) overlaySidebar.onclick = closeSidebar;
 
-    // Fecha todos os modais ao clicar no overlay escuro de fundo
+    // Fecha todos os modais ao clicar no overlay escuro de fundo da tela
     document.querySelectorAll(".sobreposicao").forEach(overlay => {
         overlay.addEventListener("click", event => {
             if (event.target === overlay) {
-                fecharTodosModais();
+                window.fecharTodosModais();
             }
         });
     });
 
-    // --- CONFIGURAÇÃO DE FLUXO DOS POPUPS DE ABASTECIMENTO ---
+    // --- FLUXO DE VALIDAÇÃO VISUAL DO ABASTECIMENTO ---
     const popupAbs = document.getElementById('popupAbastecimento');
-    const popupConf = document.getElementById('popupConfirmacaoAbs') || document.getElementById('popupConfirmacao');
+    const popupConf = document.getElementById('popupConfirmacao') || document.getElementById('popupConfirmacaoAbs');
+    const popupSuc = document.getElementById('popupSucesso');
 
+    const btnVoltarAbs = document.getElementById('btn-voltar') || document.querySelector('#popupAbastecimento .btn-voltar');
     const btnSalvarAbs = document.getElementById('btn-salvar-abastecimento');
-    const btnVoltarAbs = document.querySelector('#popupAbastecimento .btn-voltar');
-    const btnCancelaConf = document.querySelector('#popupConfirmacaoAbs .btn-voltar') || document.querySelector('#popupConfirmacao .btn-voltar');
+    const btnCancelaConf = document.getElementById('btn-cancelar-confirmacao') || document.querySelector('#popupConfirmacao .btn-voltar');
+    const btnConfirmaFin = document.getElementById('btn-confirmar-final');
+    const btnFechaSuc = document.getElementById('btn-fechar-sucesso');
 
-    // Botão Voltar (sai do formulário)
-    if (btnVoltarAbs && popupAbs) {
-        btnVoltarAbs.onclick = () => popupAbs.style.display = "none";
+    // Retorna para a tela base
+    if (btnVoltarAbs) {
+        btnVoltarAbs.onclick = () => { if (popupAbs) popupAbs.style.display = "none"; };
     }
 
-    // Botão Salvar do Abastecimento: Valida e abre tela de confirmação (a API em si é disparada no service.js)
+    // Validação de Frontend antes de avançar para a tela de confirmação
     if (btnSalvarAbs && popupAbs && popupConf) {
         btnSalvarAbs.onclick = () => {
-            const camposIds = ['litros-abastecimento', 'preco-litro', 'data-abastecimento', 'hora-abastecimento'];
+            // Combinação dos campos obrigatórios antigos e novos da interface mockada
+            const camposIds = ['litros-abastecimento', 'preco-litro', 'km-veiculo', 'nf-abastecimento', 'data-abastecimento', 'hora-abastecimento', 'troca-oleo'];
             let algumVazio = false;
 
             camposIds.forEach(id => {
@@ -131,107 +144,243 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            // Tudo validado, esconde form e mostra confirmação
+            // Oculta o formulário e exibe o modal de confirmação
             popupAbs.style.display = 'none';
             popupConf.style.display = 'flex';
         };
     }
 
-    // Botão Cancelar (dentro da tela de confirmação)
+    // Cancela a confirmação e volta pro formulário de abastecimento
     if (btnCancelaConf && popupAbs && popupConf) {
         btnCancelaConf.onclick = () => {
             popupConf.style.display = 'none';
-            popupAbs.style.display = 'flex'; // Volta para o form sem perder os dados
+            popupAbs.style.display = 'flex';
         };
+    }
+
+    // Confirmar Final: Aciona o service.js (onde está o fetch) para persistir na API
+    if (btnConfirmaFin) {
+        btnConfirmaFin.onclick = () => {
+            if (typeof window.registrarAbastecimento === "function") {
+                window.registrarAbastecimento();
+            } else {
+                console.error("Função registrarAbastecimento não encontrada. Verifique o service.js");
+            }
+        };
+    }
+
+    // Fechar Modal de Sucesso Genérico
+    if (btnFechaSuc) {
+        btnFechaSuc.onclick = () => { if (popupSuc) popupSuc.style.display = 'none'; };
     }
 });
 
 // ===================================================================
-// 3. FUNÇÕES GLOBAIS DE MANIPULAÇÃO DE UI (EXPOSTAS NO WINDOW)
+// 3. FUNÇÕES GLOBAIS DE MANIPULAÇÃO DE UI (Window Scope)
 // ===================================================================
 
+window.abrirModalConfirmacao = () => {
+    const modal = document.getElementById("modalConfirmacao");
+    if (modal) modal.style.display = "flex";
+};
+
 window.fecharTodosModais = () => {
-    ["modalConfirmacao", "modalDetalhesVeiculo", "popupAbastecimento", "popupConfirmacaoAbs", "modalAvisoCheckout"].forEach(id => {
+    // Array com IDs das duas versões
+    const modais = [
+        "modalConfirmacao", "modalDetalhesVeiculo", "popupAbastecimento",
+        "popupConfirmacao", "popupConfirmacaoAbs", "modalAvisoCheckout", "popupSucesso"
+    ];
+
+    modais.forEach(id => {
         const element = document.getElementById(id);
         if (element) element.style.display = "none";
     });
 
     const sidebar = document.getElementById("sidebar");
     const overlaySidebar = document.getElementById("overlayBlurSidebar");
-    if (sidebar) sidebar.style.width = "0";
+    if (sidebar) {
+        sidebar.style.width = "0";
+        sidebar.classList.remove("open");
+    }
     if (overlaySidebar) overlaySidebar.classList.remove("active");
 };
 
 // ===================================================================
-// VERIFICA SERVIÇO NO BANCO E MONTA A TELA (Check-in vs Check-out)
+// 4. INJEÇÃO DE DADOS INICIAIS (BASEADO NO ESTADO LOCAL)
 // ===================================================================
-window.carregarDadosTelaInicial = async function () {
+
+window.carregarDadosTelaInicial = function () {
+    // 1. Tratamento de Boas-vindas
     const userName = localStorage.getItem('userName');
-    if (userName && document.getElementById('boas-vindas-titulo')) {
-        document.getElementById('boas-vindas-titulo').textContent = `Bem vindo, ${userName}!`;
+    if (userName) {
+        const technGreeting = document.getElementById('boas-vindas-titulo');
+        const mangGreeting = document.getElementById('nome-usuario-logado');
+        if (technGreeting) technGreeting.textContent = `Bem vindo, ${userName}!`;
+        if (mangGreeting) mangGreeting.textContent = userName;
     }
 
-    const postCheckin = document.getElementById("secao-pos-checkin");
-    const infoDados = document.getElementById("info-veiculo-dados");
+    // 2. Leitura de estado de veículos e serviço
+    const vehicleData = localStorage.getItem("selectedVehicle");
+    const activeServiceId = localStorage.getItem("activeServiceId");
+
     const btnCheckin = document.getElementById("container-checkin-botao");
+    const infoDados = document.getElementById("info-veiculo-dados");
+    const postCheckin = document.getElementById("secao-pos-checkin");
 
+    // Cenário A: Nenhum veículo selecionado na tela de inicio
+    if (!vehicleData || vehicleData === "null") {
+        if (btnCheckin) btnCheckin.style.setProperty('display', 'block', 'important');
+        if (infoDados) infoDados.style.setProperty('display', 'none', 'important');
+        if (postCheckin) postCheckin.style.setProperty('display', 'none', 'important');
+        return;
+    }
+
+    // Cenário B: Veículo Selecionado (Preparando Check-in ou Em Serviço)
     try {
-        const response = await apiFetch("/service/active");
-        if (!response) return;
+        const vehicle = JSON.parse(vehicleData);
 
-        if (response.ok) {
-            const data = await response.json();
+        // Exibe o cabeçalho de dados da viatura escolhida
+        if (infoDados) infoDados.style.setProperty('display', 'block', 'important');
 
-            if (data.active) {
-                // Persiste dados no storage para uso nas outras funções do service.js
-                localStorage.setItem("activeServiceId", data.serviceId);
-                localStorage.setItem("km", data.departureKm);
-                localStorage.setItem("obs", data.description);
+        if (document.getElementById("display-modelo")) document.getElementById("display-modelo").textContent = vehicle.model || "-";
+        if (document.getElementById("display-placa")) document.getElementById("display-placa").textContent = vehicle.licensePlate || "-";
+        if (document.getElementById("display-prefixo")) document.getElementById("display-prefixo").textContent = vehicle.prefix || "-";
 
-                // Mostra/Esconde elementos da UI
-                if (btnCheckin) btnCheckin.style.display = 'none';
-                if (infoDados) infoDados.style.display = 'block';
-                if (postCheckin) postCheckin.style.display = 'block';
+        // Preenche campos persistidos
+        const kmInput = document.getElementById("quilometragem-inicial");
+        const obsInput = document.getElementById("observacoes");
+        if (kmInput) kmInput.value = localStorage.getItem("km") || "";
+        if (obsInput) obsInput.value = localStorage.getItem("obs") || "";
 
-                // Preenche dados do veículo
-                document.getElementById("display-modelo").textContent = data.model;
-                document.getElementById("display-placa").textContent = data.licensePlate;
-                document.getElementById("display-prefixo").textContent = data.carPrefix;
+        // Analisa se o veículo está com check-in concluído (Serviço Ativo)
+        if (activeServiceId) {
+            if (btnCheckin) btnCheckin.style.setProperty('display', 'none', 'important');
+            if (postCheckin) postCheckin.style.setProperty('display', 'block', 'important');
 
-                // Preenche KM e Observações
-                if (document.getElementById("quilometragem-inicial"))
-                    document.getElementById("quilometragem-inicial").value = data.departureKm;
-                if (document.getElementById("observacoes"))
-                    document.getElementById("observacoes").value = data.description;
-
-                // ============================================================
-                // CORREÇÃO DA DATA E HORÁRIO (Conversão de ISO para Input)
-                // ============================================================
-                if (data.departureTime) {
-                    const dt = new Date(data.departureTime);
-
-                    // Formata para YYYY-MM-DD
-                    const dataFormatada = dt.toISOString().split('T')[0];
-                    // Formata para HH:MM
-                    const horaFormatada = dt.toTimeString().split(' ')[0].substring(0, 5);
-
-                    if (document.getElementById("data-inicial"))
-                        document.getElementById("data-inicial").value = dataFormatada;
-                    if (document.getElementById("horario-inicial"))
-                        document.getElementById("horario-inicial").value = horaFormatada;
-                }
-
-                // Transforma a tela para modo Checkout/Abastecimento
-                if (typeof transicaoPosCheckin === "function") transicaoPosCheckin();
-
-            } else {
-                // Se não há serviço ativo, garante que a tela está limpa
-                if (btnCheckin) btnCheckin.style.display = 'block';
-                if (infoDados) infoDados.style.display = 'none';
-                if (postCheckin) postCheckin.style.display = 'none';
+            // Re-aplica a transformação de botões (Check-in -> Checkout/Abastecer)
+            if (typeof window.transicaoPosCheckin === "function") {
+                window.transicaoPosCheckin();
             }
+        } else {
+            // Analisa se apenas selecionou o carro, mas ainda precisa confirmar o Check-in
+            if (btnCheckin) btnCheckin.style.setProperty('display', 'none', 'important');
+            if (postCheckin) postCheckin.style.setProperty('display', 'block', 'important');
         }
+
     } catch (error) {
-        console.error("Falha ao carregar dados iniciais:", error);
+        console.error("Erro ao ler dados do veículo no localStorage:", error);
+        localStorage.removeItem("selectedVehicle");
     }
 };
+
+// Mudar km
+let valorKmOriginal = "";
+
+function alternarEdicaoKM(editando) {
+    const input = document.getElementById('quilometragem-inicial');
+    const btnEdit = document.getElementById('btn-edit-km');
+    const btnSave = document.getElementById('btn-save-km');
+    const btnCancel = document.getElementById('btn-cancel-km');
+
+    if (editando) {
+        // Salva o valor atual antes de começar a editar
+        valorKmOriginal = input.value;
+
+        input.readOnly = false;
+        input.focus();
+        btnEdit.style.display = 'none';
+        btnSave.style.display = 'flex';
+        btnCancel.style.display = 'flex';
+    } else {
+        // Cancela: volta o valor original e tranca o campo
+        input.value = valorKmOriginal;
+        input.readOnly = true;
+        btnEdit.style.display = 'flex';
+        btnSave.style.display = 'none';
+        btnCancel.style.display = 'none';
+    }
+}
+
+function salvarEdicaoKM() {
+    const input = document.getElementById('quilometragem-inicial');
+    const btnEdit = document.getElementById('btn-edit-km');
+    const btnSave = document.getElementById('btn-save-km');
+    const btnCancel = document.getElementById('btn-cancel-km');
+
+    // Aqui você pode adicionar validações (se é número, etc)
+    if (input.value.trim() === "") {
+        alert("Por favor, digite um valor.");
+        return;
+    }
+
+    // Tranca o campo e volta ao estado inicial de botões
+    input.readOnly = true;
+    btnEdit.style.display = 'flex';
+    btnSave.style.display = 'none';
+    btnCancel.style.display = 'none';
+
+    console.log("Nova KM salva:", input.value);
+}
+
+// Nota: O fluxo de cancelamento de check-in é controlado pelas
+// funções onclick em service.js (confirmarCancelamentoCheckin, etc.)
+// que se comunicam com a API do backend.
+
+
+const popupConfirmacao = document.getElementById("popupConfirmacao");
+const btnCancelarConfirmacao = document.getElementById("btn-cancelar-confirmacao");
+const btnConfirmarFinal = document.getElementById("btn-confirmar-final");
+
+// Variável para guardar o ID do chamado que o usuário quer apagar
+let idChamadoParaDeletar = null;
+
+/**
+ * Função global para abrir o pop-up de confirmação
+ * @param {number|string} id - O ID do chamado que será excluído
+ */
+window.abrirPopupConfirmacao = function(id) {
+    idChamadoParaDeletar = id;
+    if (popupConfirmacao) {
+        popupConfirmacao.style.display = "flex"; // Abre o pop-up centralizado
+    }
+};
+
+/**
+ * Função global para fechar o pop-up
+ */
+window.fecharPopupConfirmacao = function() {
+    idChamadoParaDeletar = null;
+    if (popupConfirmacao) {
+        popupConfirmacao.style.display = "none"; // Esconde o pop-up
+    }
+};
+
+// Configura o botão "Voltar" (Cancelar) para fechar o pop-up
+if (btnCancelarConfirmacao) {
+    btnCancelarConfirmacao.addEventListener("click", window.fecharPopupConfirmacao);
+}
+
+// Configura o botão "Confirmar" para executar a exclusão
+if (btnConfirmarFinal) {
+    btnConfirmarFinal.addEventListener("click", function() {
+        if (!idChamadoParaDeletar) return;
+
+        // 1. Lógica de exclusão delegada para a função do mapa/serviço correspondente
+        if (typeof window.executarExclusaoChamado === "function") {
+            window.executarExclusaoChamado(idChamadoParaDeletar);
+        } else {
+            console.log("Chamado excluído com ID:", idChamadoParaDeletar);
+            if (typeof window.mostrarToast === "function") {
+                window.mostrarToast("Chamado excluído com sucesso!", "toast-aviso1");
+            }
+            window.fecharPopupConfirmacao();
+        }
+    });
+}
+
+// Fecha o pop-up se o usuário clicar no fundo escuro (fora do card de confirmação)
+window.addEventListener("click", function(event) {
+    if (event.target === popupConfirmacao) {
+        window.fecharPopupConfirmacao();
+    }
+});

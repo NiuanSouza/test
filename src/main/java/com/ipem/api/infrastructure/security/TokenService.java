@@ -44,6 +44,32 @@ public class TokenService {
         }
     }
 
+    public String generatePasswordResetToken(User user) {
+        try {
+            var algorithm = Algorithm.HMAC256(secret);
+            return JWT.create()
+                    .withIssuer("SIVA-RESET")
+                    .withSubject(user.getEmail())
+                    .withExpiresAt(LocalDateTime.now().plusMinutes(15).toInstant(ZoneOffset.of("-03:00")))
+                    .sign(algorithm);
+        } catch (JWTCreationException exception) {
+            throw new RuntimeException("Erro ao gerar token de reset de senha", exception);
+        }
+    }
+
+    public String getResetSubject(String tokenJWT) {
+        try {
+            var algorithm = Algorithm.HMAC256(secret);
+            return JWT.require(algorithm)
+                    .withIssuer("SIVA-RESET")
+                    .build()
+                    .verify(tokenJWT)
+                    .getSubject();
+        } catch (JWTVerificationException exception) {
+            return null;
+        }
+    }
+
     private Instant dataExpiracao() {
         return LocalDateTime.now().plusHours(2).toInstant(ZoneOffset.of("-03:00"));
     }

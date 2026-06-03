@@ -12,13 +12,21 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
+
 @Service
 public class UserService {
 
     private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
+    private final org.springframework.mail.javamail.JavaMailSender mailSender;
+    private final com.ipem.api.infrastructure.security.TokenService tokenService;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, PasswordEncoder passwordEncoder, org.springframework.mail.javamail.JavaMailSender mailSender, com.ipem.api.infrastructure.security.TokenService tokenService) {
         this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+        this.mailSender = mailSender;
+        this.tokenService = tokenService;
     }
 
     @Transactional
@@ -31,7 +39,7 @@ public class UserService {
                 .registration(data.registration())
                 .name(data.name())
                 .email(data.email())
-                .password(data.password())
+                .password(passwordEncoder.encode(data.password()))
                 .permission(data.permission())
                 .build();
 
@@ -40,26 +48,45 @@ public class UserService {
         return repository.save(newUser);
     }
 
+    public List<User> findAllUsers() {
+        return repository.findAll();
+    }
+
     public List<User> findAllByPermission(Permission permission) {
         return repository.findByPermissionAndIsActiveTrue(permission);
     }
 
+    // SOMENTE TÉCNICOS COM STATUS ACTIVE
+    public List<User> findActiveTechnicians() {
+        return repository.findByPermissionAndEmployeeStatusAndIsActiveTrue(
+                Permission.TECHNICIAN,
+                EmployeeStatus.AVAILABLE
+        );
+    }
+
     @Transactional
     public void deleteUser(String registration) {
-        User user = repository.findById(registration)
+        User user = repository.findByRegistrationAndIsActiveTrue(registration)
                 .orElseThrow(() -> new RuntimeException("User not found"));
+
         user.setIsActive(false);
         repository.save(user);
     }
 
+    public User findByRegistration(String registration) {
+        return repository.findByRegistrationAndIsActiveTrue(registration)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+    }
+
     public User updateUserFields(String registration, Map<String, Object> updates) {
-        // Busca o usuário pela matrícula (registration)
-        // O SQLRestriction "is_active = true" já filtrará usuários inativos automaticamente
-        User user = repository.findById(registration)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado com a matrícula: " + registration));
+
+        User user = repository.findByRegistrationAndIsActiveTrue(registration)
+                .orElseThrow(() -> new RuntimeException(
+                        "Usuário não encontrado com a matrícula: " + registration
+                ));
 
         updates.forEach((key, value) -> {
-            if (value == null) return; // Ignora valores nulos enviados no mapa
+            if (value == null) return;
 
             switch (key) {
                 case "name":
@@ -95,11 +122,53 @@ public class UserService {
                 case "isActive":
                     user.setIsActive((Boolean) value);
                     break;
+                case "photo":
+                    user.setPhoto((String) value);
+                    break;
+                case "password":
+                    user.setPassword(passwordEncoder.encode((String) value));
+                    break;
                 default:
                     break;
             }
         });
 
         return repository.save(user);
+    }
+
+    @org.springframework.beans.factory.annotation.Value("${spring.mail.username}")
+    private String mailFrom;
+
+    public void requestPasswordReset(String email) {
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new RuntimeException("E-mail não encontrado."));
+
+        // Altera a senha diretamente sem usar Token de confirmação
+        user.setPassword(passwordEncoder.encode("Troca123"));
+        repository.save(user);
+
+        org.springframework.mail.SimpleMailMessage message = new org.springframework.mail.SimpleMailMessage();
+        message.setFrom(mailFrom);
+        message.setTo(user.getEmail());
+        message.setSubject("Recuperação de Senha - IPEM");
+        message.setText("Olá,\n\nSua senha foi redefinida com sucesso.\n\n" +
+                "Sua nova senha de acesso é: Troca123\n\n" +
+                "Recomendamos que você a altere após o login.");
+
+        mailSender.send(message);
+    }
+
+    @Transactional
+    public void confirmPasswordReset(String token) {
+        String email = tokenService.getResetSubject(token);
+        if (email == null) {
+            throw new RuntimeException("Token inválido ou expirado.");
+        }
+
+        User user = repository.findByEmailAndIsActiveTrue(email)
+                .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+
+        user.setPassword(passwordEncoder.encode("Troca123"));
+        repository.save(user);
     }
 }

@@ -1,6 +1,7 @@
 package com.ipem.api.modules.vehicle.controller;
 
 import com.ipem.api.modules.vehicle.dto.CarUpdateDTO;
+import com.ipem.api.modules.vehicle.dto.VehicleKmResponseDTO;
 import com.ipem.api.modules.vehicle.model.Car;
 // import com.ipem.api.modules.vehicle.dto.CarRequestDTO; // Descomente se for usar o DTO
 import com.ipem.api.modules.vehicle.service.VehicleService;
@@ -47,13 +48,22 @@ public class VehicleController {
         }
     }
 
+    @GetMapping("/{prefix}/last-final-km")
+    public ResponseEntity<?> getLastFinalKm(@PathVariable String prefix) {
+        try {
+            Float lastKm = vehicleService.findLastFinalKmByPrefix(prefix.trim());
+            return ResponseEntity.ok(new VehicleKmResponseDTO(lastKm));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+
     // ===================================================================================
     // CADASTROS E ATUALIZAÇÕES (POST / PATCH)
     // ===================================================================================
 
     @PostMapping("/register")
     public ResponseEntity<?> registerCar(@RequestBody @Valid Car car) {
-        // "@RequestBody @Valid CarRequestDTO dto" no futuro para evitar Mass Assignment.
         try {
             var newCar = vehicleService.register(car);
             return ResponseEntity.ok(Map.of(

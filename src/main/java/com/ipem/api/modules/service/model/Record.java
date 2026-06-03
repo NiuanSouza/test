@@ -6,14 +6,14 @@ import com.ipem.api.infrastructure.models.BaseEntity;
 import com.ipem.api.modules.service.model.enums.RecordType;
 import jakarta.persistence.*;
         import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
+
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "records")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@SQLRestriction("is_active = true")
+
 @Inheritance(strategy = InheritanceType.JOINED)
 public class Record extends BaseEntity {
     @Id

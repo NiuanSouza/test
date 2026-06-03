@@ -49,4 +49,3 @@ A API foi construída com foco em performance e integridade dos dados, utilizand
 Estatísticas de Uso: Gráficos de consumo de combustível e eficiência da frota.
 
 Histórico de Condutores: Rastreabilidade total de multas e ocorrências por motorista.
-# test

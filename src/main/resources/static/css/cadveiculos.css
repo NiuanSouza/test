@@ -14,6 +14,9 @@ body {
     padding-top: 20px;
     width: 100%;
     font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex !important;
+    align-content: flex-start !important;
 }
 
 .top-bar {
@@ -352,6 +355,13 @@ body {
     outline: none;
 }
 
+.input[readonly],
+.input:disabled {
+    color: #888888;
+    opacity: 1;
+    -webkit-text-fill-color: #888888;
+}
+
 label {
     color: #999;
     font-size: 15px;
@@ -367,7 +377,8 @@ label {
 }
 
 .input:focus~label,
-.input:valid~label {
+.input:valid~label,
+.input[value]:not([value=""])~label {
     top: -20px;
     font-size: 14px;
     color: #5264AE;
@@ -380,14 +391,16 @@ label {
     gap: 20px;
 }
 
-select.input {
-    appearance: none;
-    background-color: transparent;
-    cursor: pointer;
+select.input option {
+    font-size: 16px;
+    padding: 8px 12px;
+    color: #333;
+    background-color: #fff;
 }
 
 .input:focus ~ label,
 .input:valid ~ label,
+.input[value]:not([value=""]) ~ label,
 select.input:not([value=""]) ~ label {
     top: -20px;
     font-size: 14px;
@@ -405,7 +418,13 @@ select.input {
     background-color: transparent;
     cursor: pointer;
     width: 200px;
-    height: 40px; /* Altura padronizada */
+    height: 40px;
+    padding-right: 5px;
+    border-bottom: 1px solid #515151;
+    transition: border-color 0.2s;
+}
+select.input:hover, select.input:focus {
+    border-bottom: 2px solid #5264AE;
 }
 
 select.input:focus ~ label,
@@ -565,5 +584,72 @@ select.input:not([value=""]) ~ label {
         flex-direction: column;
         align-items: center;
         gap: 20px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .chamado-card {
+        width: var(--layout-width, 95%);
+        padding: 40px;
+        margin: 20px auto;
+    }
+
+    .chamado-conteudo {
+        gap: 30px;
+    }
+
+    .input, 
+    select.input {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 560px) {
+    body {
+        padding-top: 10px;
+    }
+
+    .chamado-card {
+        width: min(92vw, 560px) !important;
+        padding: 24px 16px !important;
+        margin: 10px auto;
+    }
+
+    .chamado-titulo {
+        font-size: 22px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .chamado-conteudo {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-bottom: 35px;
+    }
+
+    .coluna {
+        width: 100%;
+        gap: 24px;
+    }
+
+    .group {
+        height: auto;
+        margin-bottom: 5px;
+    }
+
+    .input, 
+    select.input {
+        width: 100% !important;
+        font-size: 15px;
+    }
+    
+    #toast-aviso, 
+    #toast-aviso1 {
+        width: 90%;
+        font-size: 14px;
+        text-align: center;
+        padding: 12px 15px;
     }
 }

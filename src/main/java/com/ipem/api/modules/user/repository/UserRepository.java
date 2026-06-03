@@ -21,6 +21,12 @@ public interface UserRepository extends JpaRepository<User, String> {
 
     List<User> findByPermissionAndIsActiveTrue(Permission permission);
 
+    // FILTRO SOMENTE TÉCNICOS ATIVOS
+    List<User> findByPermissionAndEmployeeStatusAndIsActiveTrue(
+            Permission permission,
+            EmployeeStatus employeeStatus
+    );
+
     List<User> findByEmployeeStatusAndIsActiveTrue(EmployeeStatus status);
     List<User> findByNameContainingIgnoreCaseAndIsActiveTrue(String name);
 

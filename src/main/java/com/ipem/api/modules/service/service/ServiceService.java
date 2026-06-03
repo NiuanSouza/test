@@ -32,27 +32,41 @@ import java.util.*;
  * Responsável por controlar check-ins, check-outs, abastecimentos,
  * geração de relatórios mensais e auditoria do histórico (Envers).
  */
+import com.ipem.api.modules.service.dto.PendingServiceRequestDTO;
+import com.ipem.api.modules.service.dto.PendingServiceResponseDTO;
+import com.ipem.api.modules.service.model.ServiceAddresses;
+import com.ipem.api.modules.service.repository.ServiceAddressesRepository;
+
 @org.springframework.stereotype.Service
 public class ServiceService {
 
     private final ServiceRepository serviceRepository;
+    private final ServiceAddressesRepository serviceAddressesRepository;
     private final CarRepository carRepository;
     private final UserRepository userRepository;
     private final RecordRepository recordRepository;
     private final RefuelingRepository refuelingRepository;
+    private final com.ipem.api.modules.service.repository.IncidentRepository incidentRepository;
     private final EntityManager entityManager;
 
     /**
      * Injeção de dependências via construtor (Melhor prática do Spring, garante imutabilidade).
      */
-    public ServiceService(ServiceRepository serviceRepository, CarRepository carRepository,
-                          UserRepository userRepository, RecordRepository recordRepository,
-                          RefuelingRepository refuelingRepository, EntityManager entityManager) {
+    public ServiceService(ServiceRepository serviceRepository, 
+                          ServiceAddressesRepository serviceAddressesRepository,
+                          CarRepository carRepository, 
+                          UserRepository userRepository, 
+                          RecordRepository recordRepository,
+                          RefuelingRepository refuelingRepository, 
+                          com.ipem.api.modules.service.repository.IncidentRepository incidentRepository,
+                          EntityManager entityManager) {
         this.serviceRepository = serviceRepository;
+        this.serviceAddressesRepository = serviceAddressesRepository;
         this.carRepository = carRepository;
         this.userRepository = userRepository;
         this.recordRepository = recordRepository;
         this.refuelingRepository = refuelingRepository;
+        this.incidentRepository = incidentRepository;
         this.entityManager = entityManager;
     }
 
@@ -70,15 +84,38 @@ public class ServiceService {
         var user = userRepository.findById(dto.userRegistration())
                 .orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
 
-        // Monta a nova entidade usando o padrão Builder
-        Service newService = Service.builder()
-                .car(car)
-                .user(user)
-                .departureTime(LocalDateTime.now()) // Carimba a hora atual de saída
-                .departureKm(dto.recordKm())
-                .description(dto.note())
-                .priority(dto.priority() != null ? dto.priority() : Priority.MEDIUM)
-                .build();
+        car.setVehicleStatus(VehicleStatus.IN_USE);
+        car.setAvailable(false);
+        carRepository.save(car); // Guardamos a alteração usando o repositório que já existe
+
+        Service newService;
+
+        // Se o front-end mandou um serviceId, significa que o técnico aceitou um chamado já existente!
+        if (dto.serviceId() != null) {
+            newService = serviceRepository.findById(dto.serviceId())
+                    .orElseThrow(() -> new RuntimeException("Chamado pendente não encontrado."));
+            newService.setCar(car);
+            newService.setUser(user);
+            newService.setDepartureTime(LocalDateTime.now()); // Carimba a hora atual de saída
+            newService.setDepartureKm(dto.recordKm());
+
+            // Concatena a observação do técnico com a descrição original do gestor
+            if (dto.note() != null && !dto.note().isBlank()) {
+                String descAtual = newService.getDescription() != null ? newService.getDescription() : "";
+                newService.setDescription(descAtual + "\n[Obs Técnico]: " + dto.note());
+            }
+        } else {
+            // Se não mandou, é um chamado "avulso" criado na hora pelo próprio técnico
+            // Monta a nova entidade usando o padrão Builder
+            newService = Service.builder()
+                    .car(car)
+                    .user(user)
+                    .departureTime(LocalDateTime.now()) // Carimba a hora atual de saída
+                    .departureKm(dto.recordKm())
+                    .description(dto.note())
+                    .priority(dto.priority() != null ? dto.priority() : Priority.MEDIUM)
+                    .build();
+        }
 
         newService.setIsActive(true); // Marca o serviço como "Em Andamento"
         return serviceRepository.save(newService);
@@ -201,7 +238,8 @@ public class ServiceService {
                         service.getCompletionTime() != null ? "Finalizado" : "Em andamento",
                         service.getDepartureKm(),
                         service.getArrivalKm(),
-                        service.getDestinationRequester()
+                        service.getDestinationRequester(),
+                        "-"
                 ));
             }
             // Adiciona o mês processado à lista final
@@ -280,5 +318,124 @@ public class ServiceService {
      */
     public Service findActiveServiceByUser(String registration) {
         return serviceRepository.findByUserRegistrationAndIsActiveTrue(registration).orElse(null);
+    }
+
+    public List<Service> getPendingServices() {
+        return serviceRepository.findByDepartureTimeIsNullAndIsActiveTrue();
+    }
+
+    @Transactional
+    public Service createPendingService(PendingServiceRequestDTO dto) {
+        Service service = Service.builder()
+                .destinationRequester(dto.endereco())
+                .description(dto.observacoes() != null ? dto.observacoes() : dto.tipoServico())
+                .isActive(true)
+                // Note: user and car are null
+                .build();
+        
+        service = serviceRepository.save(service);
+
+        ServiceAddresses address = ServiceAddresses.builder()
+                .service(service)
+                .street(dto.endereco() != null ? dto.endereco() : "Não informado")
+                .zipCode(dto.cep())
+                .latitude(dto.latitude())
+                .longitude(dto.longitude())
+                .city("São Paulo") // default
+                .state("SP") // default
+                .build();
+        
+        serviceAddressesRepository.save(address);
+        return service;
+    }
+
+    public List<PendingServiceResponseDTO> getPendingServicesDTOs() {
+        List<Service> services = getPendingServices();
+        return services.stream().map(service -> {
+            ServiceAddresses address = serviceAddressesRepository.findByServiceId(service.getId()).stream().findFirst().orElse(null);
+            return new PendingServiceResponseDTO(
+                    service.getId(),
+                    address != null ? address.getStreet() : service.getDestinationRequester(),
+                    address != null ? address.getZipCode() : "",
+                    service.getDescription(), // assuming this holds the service type for now
+                    "Nenhuma", // tipoCNH mock
+                    "Não atribuído", // tecnico mock
+                    address != null ? address.getLatitude() : null,
+                    address != null ? address.getLongitude() : null,
+                    service.getDescription(),
+                    "pendente",
+                    service.getCreatedAt()
+            );
+        }).toList();
+    }
+
+    @Transactional
+    public void deleteService(Long id) {
+        serviceAddressesRepository.findByServiceId(id).forEach(serviceAddressesRepository::delete);
+        serviceRepository.deleteById(id);
+    }
+
+    // ===================================================================
+    // OCORRÊNCIAS / INCIDENTES
+    // ===================================================================
+
+
+    /**
+     * REGISTRAR OCORRÊNCIA (Defeito ou outro incidente durante o serviço)
+     * Cria um Incident vinculado ao serviço ativo sem cancelá-lo.
+     */
+    @Transactional
+    public com.ipem.api.modules.service.model.Incident registerIncident(
+            Long serviceId, String description, String incidentType, String severity, Boolean requestSupport) {
+
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+
+        com.ipem.api.modules.service.model.Incident incident = com.ipem.api.modules.service.model.Incident.builder()
+                .service(service)
+                .incidentType(com.ipem.api.modules.service.model.enums.IncidentType.valueOf(incidentType))
+                .severity(com.ipem.api.modules.service.model.enums.Severity.valueOf(severity))
+                .description(description)
+                .requestSupport(requestSupport)
+                .isActive(true)
+                .resolved(false)
+                .build();
+
+        // Registra também na linha do tempo do serviço (Record)
+        Record record = new Record();
+        record.setService(service);
+        record.setRecordType(RecordType.INCIDENT);
+        record.setRecordDate(LocalDateTime.now());
+        record.setRecordKm(service.getCar() != null ? service.getCar().getCurrentKm() : 0f);
+        record.setNote("Ocorrência: " + description);
+        recordRepository.save(record);
+
+        return incidentRepository.save(incident);
+    }
+
+    /**
+     * CANCELAR SERVIÇO (Pós check-in)
+     * Registra um incidente do tipo CANCELLATION, encerra o serviço e libera o veículo.
+     */
+    @Transactional
+    public void cancelService(Long serviceId, String motivo) {
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+
+        // 1. Registra a ocorrência de cancelamento
+        registerIncident(serviceId, motivo, "CANCELLATION", "MEDIUM", false);
+
+        // 2. Encerra o serviço
+        service.setCompletionTime(LocalDateTime.now());
+        service.setIsActive(false);
+        serviceRepository.save(service);
+
+        // 3. Libera o veículo
+        if (service.getCar() != null) {
+            var car = service.getCar();
+            car.setVehicleStatus(VehicleStatus.AVAILABLE);
+            car.setAvailable(true);
+            carRepository.save(car);
+        }
     }
 }

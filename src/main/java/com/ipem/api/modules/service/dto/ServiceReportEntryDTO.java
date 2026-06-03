@@ -12,6 +12,7 @@ public record ServiceReportEntryDTO(
         String status,
         Float departureKm,
         Float arrivalKm,
-        String destinationRequester
+        String destinationRequester,
+        String refuelingInfo
 ) {
 }

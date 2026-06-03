@@ -40,7 +40,13 @@ public class SecurityConfig {
                     req.requestMatchers(HttpMethod.OPTIONS, "/**").permitAll();
                     req.requestMatchers("/error").permitAll();
                     req.requestMatchers("/", "/*.html", "/css/**", "/js/**", "/img/**", "/favicon.ico").permitAll();
-                    req.requestMatchers(HttpMethod.POST, "/user/login").permitAll();
+                    req.requestMatchers(HttpMethod.POST, "/user/login", "/user/reset-password", "/user/reset-password-confirm").permitAll();
+
+                    req.requestMatchers(
+                            "/v3/api-docs/**",
+                            "/swagger-ui/**",
+                            "/swagger-ui.html"
+                    ).permitAll();
 
                     req.requestMatchers("/service/dashboard").hasRole("ADMINISTRATOR");
 

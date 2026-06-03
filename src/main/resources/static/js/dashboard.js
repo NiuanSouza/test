@@ -1,30 +1,39 @@
 /**
- * js/dashboard.js
- * Responsável por: Carregar KPIs (métricas) e Resumo do Histórico na tela inicial do Gestor.
+ * ===================================================================
+ * ARQUIVO: dashboard.js
+ * REFERÊNCIA GLOBAL: Requer 'basic.js' (Utiliza apiFetch, exibirErro)
+ * RESPONSABILIDADE: Carregar KPIs (métricas principais) e o Resumo
+ * do Histórico de chamados na tela inicial do Gestor.
+ * ===================================================================
  */
 
-// ===================================================================
-// 1. CARREGAR MÉTRICAS (KPIs)
-// ===================================================================
+/**
+ * Função: carregarMetricasDashboard
+ * O que faz: Busca as métricas consolidadas (veículos, técnicos, gastos) no backend
+ * e atualiza os cards numéricos da tela do gestor. Formata automaticamente
+ * moedas (R$) e números inteiros.
+ * Requisição: GET /dashboard/metrics
+ */
 async function carregarMetricasDashboard() {
     try {
-        const response = await apiFetch("/dashboard/metrics");
-        if (!response) return; // basic.js já lidou com token expirado/redirect
+        // Utiliza o wrapper global que injeta o token e lida com erros de sessão
+        const response = await window.apiFetch("/dashboard/metrics", { method: "GET" });
+        if (!response) return; // Interceptado pelo basic.js (ex: token expirado)
 
         if (!response.ok) {
             const erroTexto = await response.text();
-            // Usa o UI de erro global do basic.js
+            // Utiliza a UI global de erro caso o servidor retorne falha
             window.exibirErro(`Status HTTP: ${response.status}`, erroTexto, ".quadros-container");
             return;
         }
 
         const metricas = await response.json();
 
-        // Funções auxiliares para formatação
+        // Funções auxiliares locais para formatação visual
         const formatarMoeda = (valor) => `R$ ${valor.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         const formatarNumero = (valor) => valor.toLocaleString('pt-BR');
 
-        // Mapeia os IDs do HTML diretamente com as chaves do JSON
+        // Mapeamento dinâmico: Chave é o ID do elemento HTML, Valor é o dado da API
         const mapaMetricas = {
             "val-disponiveis": metricas.availableCars,
             "val-manutencao": metricas.maintenanceCars,
@@ -36,7 +45,7 @@ async function carregarMetricasDashboard() {
             "val-litros": metricas.totalLitersRefueled !== undefined ? `${formatarNumero(metricas.totalLitersRefueled)} L` : undefined
         };
 
-        // Aplica todos os valores no DOM em um único loop seguro
+        // Itera sobre o mapa e injeta os valores no DOM de forma segura
         Object.entries(mapaMetricas).forEach(([id, valor]) => {
             if (valor !== undefined) {
                 const el = document.getElementById(id);
@@ -45,19 +54,23 @@ async function carregarMetricasDashboard() {
         });
 
     } catch (error) {
+        console.error("Erro de conexão ao buscar métricas:", error);
         window.exibirErro("Falha de Comunicação", error.message, ".quadros-container");
     }
 }
 
-// ===================================================================
-// 2. CARREGAR RESUMO DE HISTÓRICO (Últimas 5 auditorias)
-// ===================================================================
+/**
+ * Função: carregarResumoHistorico
+ * O que faz: Consome os últimos registros de auditoria do sistema (via Hibernate Envers)
+ * e injeta uma lista simplificada das últimas 5 atividades recentes na tela inicial.
+ * Requisição: GET /dashboard/history
+ */
 async function carregarResumoHistorico() {
     const container = document.getElementById("chamados-recentes-lista");
-    if (!container) return;
+    if (!container) return; // Aborta silenciosamente se a div não existir na tela atual
 
     try {
-        const response = await apiFetch("/dashboard/history");
+        const response = await window.apiFetch("/dashboard/history", { method: "GET" });
         if (!response) return;
 
         if (!response.ok) {
@@ -72,14 +85,14 @@ async function carregarResumoHistorico() {
             return;
         }
 
-        // Atualiza pequenos contadores da UI (se existirem na tela)
+        // Atualiza contadores rápidos de status (se as tags existirem no layout)
         const ativos = data.filter(rev => rev.entity && rev.entity.completionTime === null).length;
         const concluidos = data.filter(rev => rev.entity && rev.entity.completionTime !== null).length;
 
         if (document.getElementById("resumo-ativos")) document.getElementById("resumo-ativos").textContent = ativos;
         if (document.getElementById("resumo-concluidos")) document.getElementById("resumo-concluidos").textContent = concluidos;
 
-        // Renderiza apenas as 5 atualizações mais recentes
+        // Limita as renderizações aos 5 eventos mais recentes para não poluir o dashboard
         const recentesHtml = data.slice(0, 5).map(rev => {
             if (!rev.entity) return "";
 
@@ -87,7 +100,7 @@ async function carregarResumoHistorico() {
             const statusStr = isFinalizado ? "finalizado" : "andamento";
             const statusLabelStr = isFinalizado ? "Finalizado" : "Em andamento";
 
-            // Puxa a data oficial do Envers mapeada no Java
+            // Processamento da data baseada no log de auditoria
             const dataAbertura = new Date(rev.revisionDate || rev.entity.departureTime || new Date());
             const horaStr = `${String(dataAbertura.getHours()).padStart(2, '0')}:${String(dataAbertura.getMinutes()).padStart(2, '0')}`;
 
@@ -96,6 +109,7 @@ async function carregarResumoHistorico() {
             const tecnico = rev.entity.user?.name || "N/A";
             const destino = rev.entity.destinationRequester || "Local não informado";
 
+            // Retorna o template HTML do card de auditoria
             return `
                 <article class="item-chamado item-${statusStr}">
                     <div class="item-chamado-principal">
@@ -123,11 +137,12 @@ async function carregarResumoHistorico() {
     }
 }
 
-// ===================================================================
-// 3. INICIALIZAÇÃO
-// ===================================================================
+/**
+ * Bloco de Inicialização: Event Listeners
+ * O que faz: Aguarda o carregamento do DOM. Se a URL corresponder à tela do
+ * gestor (ou contiver a classe específica), dispara o carregamento dos widgets.
+ */
 document.addEventListener("DOMContentLoaded", () => {
-    // Garante que estas funções pesadas de banco de dados só rodem na tela do Gestor
     const isTelaGestor = document.querySelector(".dashboard-gestor") || window.location.pathname.includes("telainicial-gestor.html");
 
     if (isTelaGestor) {

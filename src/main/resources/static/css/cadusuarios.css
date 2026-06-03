@@ -14,6 +14,9 @@ body {
     padding-top: 20px;
     width: 100%;
     font-family: Arial, sans-serif;
+    height: 100vh;
+    display: flex !important;
+    align-content: flex-start !important;
 }
 
 .top-bar {
@@ -424,16 +427,17 @@ label {
     animation: inputHighlighter 0.3s ease;
 }
 
-select.input, input[type="date"].input {
+select.input,
+input[type="date"].input {
     appearance: none;
     -webkit-appearance: none;
     background-color: transparent;
     color: #333;
 }
 
-.input:focus ~ label,
-.input:valid ~ label,
-select.input:not([value=""]) ~ label {
+.input:focus~label,
+.input:valid~label,
+select.input:not([value=""])~label {
     top: -20px;
     font-size: 14px;
     color: #5264AE;
@@ -476,11 +480,11 @@ select.input:not([value=""]) ~ label {
     width: 0;
 }
 
-.check-container:hover input ~ .checkmark {
+.check-container:hover input~.checkmark {
     background-color: #ccc;
 }
 
-.check-container input:checked ~ .checkmark {
+.check-container input:checked~.checkmark {
     background-color: #002080;
 }
 
@@ -490,7 +494,7 @@ select.input:not([value=""]) ~ label {
     display: none;
 }
 
-.check-container input:checked ~ .checkmark:after {
+.check-container input:checked~.checkmark:after {
     display: block;
 }
 
@@ -531,8 +535,8 @@ select.input:not([value=""]) ~ label {
     gap: 20px;
 }
 
-.input:focus ~ label,
-.input:valid ~ label {
+.input:focus~label,
+.input:valid~label {
     top: -20px;
     font-size: 14px;
     color: #5264AE;
@@ -542,6 +546,7 @@ select.input:not([value=""]) ~ label {
 input[type="date"]::-webkit-datetime-edit {
     color: transparent;
 }
+
 input[type="date"]:focus::-webkit-datetime-edit,
 input[type="date"]:valid::-webkit-datetime-edit {
     color: #333;
@@ -551,7 +556,8 @@ input[type="date"]:valid::-webkit-datetime-edit {
 
 .check-container {
     display: inline-flex;
-    align-items: center;   /* Centraliza verticalmente */
+    align-items: center;
+    /* Centraliza verticalmente */
     position: relative;
     cursor: pointer;
     height: 20px;
@@ -581,12 +587,13 @@ input[type="date"]:valid::-webkit-datetime-edit {
     z-index: 1;
 }
 
-.check-container input:checked ~ .checkmark {
+.check-container input:checked~.checkmark {
     background-color: #002080;
 }
 
 .checkmark:after {
-    content: ""; /* ISSO É OBRIGATÓRIO PARA APARECER */
+    content: "";
+    /* ISSO É OBRIGATÓRIO PARA APARECER */
     position: absolute;
     display: none;
     left: 5px;
@@ -598,7 +605,7 @@ input[type="date"]:valid::-webkit-datetime-edit {
     transform: rotate(45deg);
 }
 
-.check-container input:checked ~ .checkmark:after {
+.check-container input:checked~.checkmark:after {
     display: block;
 }
 
@@ -761,13 +768,14 @@ input[type="date"]:valid::-webkit-datetime-edit {
     top: 20px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: #ff4d4d; /* Vermelho para erro */
+    background-color: #ff4d4d;
+    /* Vermelho para erro */
     color: white;
     padding: 12px 25px;
     border-radius: 8px;
     z-index: 3000;
     font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: opacity 0.3s, top 0.3s;
 }
 
@@ -787,7 +795,7 @@ input[type="date"]:valid::-webkit-datetime-edit {
     border-radius: 8px;
     z-index: 3000;
     font-weight: bold;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
     transition: opacity 0.3s, top 0.3s;
 }
 
@@ -821,16 +829,83 @@ input[type="date"]:valid::-webkit-datetime-edit {
         align-items: center;
         gap: 20px;
     }
-    
+
     .coluna {
         width: 100%;
         min-width: 100%;
     }
-    
+
     /* Garante que o botão de cadastrar não fique gigante ou desalinhado */
     .btn-container {
         width: 100%;
         display: flex;
         justify-content: center;
+    }
+}
+
+@media (max-width: 1024px) {
+    .chamado-card {
+        width: var(--layout-width, 95%);
+        padding: 40px;
+        margin: 20px auto;
+    }
+
+    .chamado-conteudo {
+        gap: 30px;
+    }
+
+    .input,
+    select.input {
+        width: 100%;
+    }
+}
+
+
+@media (max-width: 560px) {
+    body {
+        padding-top: 10px;
+    }
+
+    .chamado-card {
+        width: min(92vw, 560px) !important;
+        padding: 24px 16px !important;
+        margin: 10px auto;
+    }
+
+    .chamado-titulo {
+        font-size: 22px;
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .chamado-conteudo {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        margin-bottom: 35px;
+    }
+
+    .coluna {
+        width: 100%;
+        gap: 24px;
+    }
+
+    .group {
+        height: auto;
+        margin-bottom: 5px;
+    }
+
+    .input,
+    select.input {
+        width: 100% !important;
+        font-size: 15px;
+    }
+
+    #toast-aviso,
+    #toast-aviso1 {
+        width: 90%;
+        font-size: 14px;
+        text-align: center;
+        padding: 12px 15px;
     }
 }

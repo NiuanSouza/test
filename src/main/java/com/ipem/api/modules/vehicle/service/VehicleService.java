@@ -1,6 +1,3 @@
-// ==================================================================
-// ARQUIVO: com.ipem.api.modules.vehicle.service.VehicleService.java
-// ==================================================================
 package com.ipem.api.modules.vehicle.service;
 
 import com.ipem.api.modules.service.model.Service;
@@ -36,6 +33,16 @@ public class VehicleService {
         this.carTypeRepository = carTypeRepository;
         this.refuelingRepository = refuelingRepository;
         this.serviceRepository = serviceRepository;
+    }
+
+    @Transactional(readOnly = true)
+    public Float findLastFinalKmByPrefix(String prefix) {
+        Car car = carRepository.findById(prefix)
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o prefixo: " + prefix));
+
+        Float lastKm = serviceRepository.findLastFinalKmByCarPrefix(car.getPrefix());
+
+        return (lastKm != null) ? lastKm : car.getCurrentKm();
     }
 
     @Transactional

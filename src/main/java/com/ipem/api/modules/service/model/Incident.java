@@ -5,14 +5,14 @@ import com.ipem.api.modules.service.model.enums.IncidentType;
 import com.ipem.api.modules.service.model.enums.Severity;
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.SQLRestriction;
+
 
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "incidents")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-@SQLRestriction("is_active = true")
+
 public class Incident extends BaseEntity {
 
     @Id

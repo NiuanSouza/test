@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 import java.util.Optional;
+import com.ipem.api.modules.service.dto.PendingServiceRequestDTO;
 
 @RestController
 @RequestMapping("/service")
@@ -57,5 +58,48 @@ public class ServiceController {
             ));
         }
         return ResponseEntity.ok(Map.of("active", false));
+    }
+
+    @GetMapping("/pending")
+    public ResponseEntity<?> getPendingServices() {
+        return ResponseEntity.ok(serviceService.getPendingServicesDTOs());
+    }
+
+    @PostMapping("/create-pending")
+    public ResponseEntity<?> createPendingService(@RequestBody PendingServiceRequestDTO dto) {
+        var service = serviceService.createPendingService(dto);
+        return ResponseEntity.ok(Map.of("serviceId", service.getId(), "message", "Chamado pendente criado com sucesso"));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteService(@PathVariable Long id) {
+        serviceService.deleteService(id);
+        return ResponseEntity.ok(Map.of("message", "Chamado deletado com sucesso"));
+    }
+
+    /**
+     * REGISTRAR OCORRÊNCIA (Defeito durante o serviço)
+     * Cria um Incident vinculado ao serviço sem cancelá-lo.
+     */
+    @PostMapping("/{id}/incident")
+    public ResponseEntity<?> registerIncident(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        String description = (String) payload.getOrDefault("description", "");
+        String incidentType = (String) payload.getOrDefault("incidentType", "DEFECT");
+        String severity = (String) payload.getOrDefault("severity", "MEDIUM");
+        Boolean requestSupport = (Boolean) payload.getOrDefault("requestSupport", false);
+
+        var incident = serviceService.registerIncident(id, description, incidentType, severity, requestSupport);
+        return ResponseEntity.ok(Map.of("message", "Ocorrência registrada com sucesso", "incidentId", incident.getId()));
+    }
+
+    /**
+     * CANCELAR SERVIÇO (Pós check-in)
+     * Registra uma ocorrência do tipo CANCELLATION e encerra o serviço, liberando o veículo.
+     */
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelService(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        String motivo = (String) payload.getOrDefault("description", "Cancelamento sem motivo informado");
+        serviceService.cancelService(id, motivo);
+        return ResponseEntity.ok(Map.of("message", "Serviço cancelado com sucesso"));
     }
 }

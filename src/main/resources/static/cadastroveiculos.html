@@ -4,76 +4,61 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cadastro de Veículos</title>
+    <link rel="stylesheet" href="css/componentes.css" />
     <link rel="stylesheet" href="css/cadveiculos.css" />
   </head>
 
   <body class="pagina-chamados">
-    <div class="top-bar">
-      <div class="left">
-        <button id="btnmenu">
-          <img src="img/menu.png" alt="icone menu" />
-        </button>
-        <span class="titulo" id="boas-vindas-titulo">Bem vindo!</span>
-      </div>
+    <div id="topbar-container"></div>
 
-      <div class="logout">
-        <button id="btnlogout" onclick="btnlogout()">
-          <img src="img/logout.png" alt="icone logout" />
-        </button>
-      </div>
-    </div>
-
-    <div id="overlayBlurSidebar" class="overlay-blur-sidebar"></div>
-
-    <div id="sidebar" class="sidebar">
-      <button id="btnx" class="close-btn">×</button>
-      <a href="telainicial-gestor.html">TELA INICIAL</a>
-      <a href="relatorios.html">RELATÓRIOS</a>
-      <a href="tecnicos-gestor.html">TÉCNICOS</a>
-      <a href="historicochamados.html">HISTÓRICO DE CHAMADOS</a>
-      <a href="cadastrousuarios.html">CADASTRO DE USUÁRIOS</a>
-      <a href="duvidas.html">DÚVIDAS</a>
-      <a href="configuracoes-gestor.html">CONFIGURAÇÕES</a>
-    </div>
+    <div id="sidebar-container"></div>
 
     <div class="chamado-card">
       <h2 class="chamado-titulo">CADASTRO DE VEÍCULOS:</h2>
 
+      <div class="grupo-centralizado" style="width: 100%; display: flex; justify-content: center; margin-top: 25px; margin-bottom: 15px;">
+        <div class="group" style="width: 100%; max-width: 400px;">
+          <select id="cad-tipo-selecionado" class="input" style="width: 100%; max-width: 100%;" onchange="aoMudarTipoVeiculo()">
+            <option value="">Novo Tipo (Preencher manualmente)</option>
+          </select>
+          <label>Selecionar Categoria do Carro:</label>
+        </div>
+      </div>
+
       <div class="chamado-conteudo">
         <div class="coluna">
           <div class="group">
-            <input required type="text" class="input" />
+            <input id="cad-marca" required type="text" class="input" />
             <label>Marca:</label>
           </div>
           <div class="group">
-            <input required type="text" class="input" />
+            <input id="cad-modelo" required type="text" class="input" />
             <label>Modelo:</label>
           </div>
           <div class="group">
-            <input required type="number" class="input" />
+            <input id="cad-ano" required type="number" class="input" />
             <label>Ano:</label>
           </div>
           <div class="group">
-            <input required type="text" class="input" />
-            <label>Cor:</label>
+            <select id="cad-categoria" required class="input">
+              <option value="passenger">Passeio</option>
+              <option value="utility">Utilitário</option>
+            </select>
+            <label>Categoria:</label>
           </div>
           <div class="group">
-            <select required class="input" value="">
-              <option value=""></option>
-              <option value="Passeio">Passeio</option>
-              <option value="Utilitario">Utilitário</option>
-            </select>
-            <label>Tipo:</label>
+            <input id="cad-cor" required type="text" class="input" />
+            <label>Cor:</label>
           </div>
         </div>
 
         <div class="coluna">
           <div class="group">
-            <input required type="text" class="input" />
+            <input id="cad-placa" required type="text" class="input" />
             <label>Placa:</label>
           </div>
           <div class="group">
-            <input required type="text" class="input" />
+            <input id="cad-prefixo" required type="text" class="input" />
             <label>Prefixo:</label>
           </div>
           <div class="group">
@@ -133,10 +118,14 @@
 
     <div id="toast-aviso" class="toast-hidden">Preencha todos os campos!</div>
     <div id="toast-aviso1" class="toast-hidden1">Preencha todos os campos!</div>
-
-    <script src="js/ui.js"></script>
     <script src="js/basic.js"></script>
+    <script src="js/componentes.js"></script>
+    <script src="js/ui.js"></script>
     <script src="js/auth.js"></script>
     <script src="js/vehicle.js"></script>
+
+    <script>
+        injetarLayout("Cadastro de Veículos");
+    </script>
   </body>
 </html>
