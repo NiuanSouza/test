@@ -34,11 +34,8 @@ public class ServiceController {
     }
 
     @PostMapping("/{id}/fuel")
-    public ResponseEntity<?> registerFuel(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
-        serviceService.registerFuel(id,
-                Double.valueOf(payload.get("amount").toString()),
-                Double.valueOf(payload.get("totalValue").toString()),
-                (String) payload.get("date"));
+    public ResponseEntity<?> registerFuel(@PathVariable Long id, @RequestBody com.ipem.api.modules.service.dto.RefuelingRequestDTO dto) {
+        serviceService.registerFuel(id, dto);
         return ResponseEntity.ok(Map.of("message", "Abastecimento ok"));
     }
 

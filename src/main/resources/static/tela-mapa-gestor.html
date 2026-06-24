@@ -107,39 +107,40 @@
     </div>
 
     <div id="modalDetalheChamado" class="sobreposicao">
-        <div class="popup-card">
-            <button class="popup-close" onclick="fecharModalDetalhes()">&times;</button>
+        <div class="popup-container modal-detalhe">
             <h2 class="popup-titulo" id="modalTitulo">Detalhes do Chamado</h2>
             <div class="popup-conteudo" id="modalConteudo"></div>
-            <div class="popup-buttons">
-                <button class="btn-voltar" onclick="fecharModalDetalhes()">Fechar</button>
+            <div class="popup-botoes">
                 <button id="btnEditarChamado" class="btn-aceitar" style="display: none;">Editar</button>
                 <button id="btnCancelarChamado" class="btn-cancelar" style="display: none;">Cancelar</button>
             </div>
+            <button class="btn-fechar-absoluto" onclick="fecharModalDetalhes()">X</button>
         </div>
     </div>
 
-    <div id="popupConfirmacao" class="popup" style="display: none">
+    <!-- POPUP DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div id="popupConfirmacaoMapa" class="popup" style="display: none">
       <div class="popup-content">
-        <h2>Confirmar?</h2>
-        <p>Tem certeza que deseja excluir este chamado?</p>
+        <h2>Confirmar Exclusão?</h2>
+        <p>Você tem certeza que deseja excluir este chamado?</p>
         <div class="popup-buttons">
-          <button id="btn-cancelar-confirmacao" class="btn-voltar">
-            Voltar
+          <button id="btn-cancelar-confirmacao-mapa" class="btn-voltar">
+            Cancelar
           </button>
-          <button id="btn-confirmar-final" class="btn-aceitar">
+          <button id="btn-confirmar-final-mapa" class="btn-aceitar">
             Confirmar
           </button>
         </div>
       </div>
     </div>
 
-    <div id="popupSucesso" class="popup" style="display: none">
+    <!-- POPUP DE SUCESSO -->
+    <div id="popupSucessoMapa" class="popup" style="display: none">
       <div class="popup-content">
         <h2>Sucesso!</h2>
-        <p>Chamado excluído com sucesso.</p>
+        <p>Operação realizada com sucesso.</p>
         <div class="popup-buttons">
-          <button id="btn-fechar-sucesso" class="btn-aceitar">OK</button>
+          <button id="btn-fechar-sucesso-mapa" class="btn-aceitar">OK</button>
         </div>
       </div>
     </div>

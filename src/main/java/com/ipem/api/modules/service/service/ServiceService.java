@@ -155,31 +155,62 @@ public class ServiceService {
      * e uma entidade "Refueling" contendo os dados financeiros.
      */
     @Transactional
-    public void registerFuel(Long serviceId, Double liters, Double totalValue, String dateString) {
+    public void registerFuel(Long serviceId, com.ipem.api.modules.service.dto.RefuelingRequestDTO dto) {
         Service service = serviceRepository.findById(serviceId)
                 .orElseThrow(() -> new RuntimeException("Serviço ativo não encontrado."));
 
+        if (!Boolean.TRUE.equals(service.getIsActive())) {
+            throw new RuntimeException("Este serviço já foi encerrado.");
+        }
+
         // Converte a data enviada pelo Frontend ou usa a data atual como fallback
-        LocalDateTime fuelDate = dateString != null ? LocalDateTime.parse(dateString) : LocalDateTime.now();
+        LocalDateTime fuelDate = dto.date() != null ? LocalDateTime.parse(dto.date()) : LocalDateTime.now();
+
+        // Usa a KM informada pelo técnico no formulário, com fallback para a KM do carro no banco
+        Float km = dto.recordKm() != null ? dto.recordKm()
+                : (service.getCar() != null ? service.getCar().getCurrentKm() : null);
+
+        if (km == null || km <= 0) {
+            throw new IllegalArgumentException("A valid kilometer reading is required.");
+        }
+
+        if (dto.liters() == null || dto.liters() <= 0) {
+            throw new IllegalArgumentException("A quantidade de litros deve ser maior que zero.");
+        }
+
+        Double totalAmount = dto.totalAmount() != null ? dto.totalAmount()
+                : (double) (dto.liters() * (dto.pricePerLiter() != null ? dto.pricePerLiter() : 0.0));
+        if (totalAmount <= 0) {
+            throw new IllegalArgumentException("O valor total deve ser maior que zero.");
+        }
 
         // 1. Cria o evento genérico na linha do tempo do serviço
         Record record = new Record();
         record.setService(service);
         record.setRecordType(RecordType.REFUELING);
         record.setRecordDate(fuelDate);
-        record.setRecordKm(service.getCar() != null ? service.getCar().getCurrentKm() : 0f);
+        record.setRecordKm(km);
         record.setNote("Abastecimento em serviço");
         record = recordRepository.save(record);
 
         // 2. Cria o registro financeiro e volumétrico do abastecimento
         Refueling fuel = new Refueling();
-        fuel.setRecord(record); // Vincula o abastecimento ao evento criado acima
-        fuel.setLiters(liters.floatValue());
-        fuel.setTotalAmount(totalValue);
+        fuel.setRecord(record);
+        fuel.setLiters(dto.liters());
+        fuel.setInvoice(dto.invoice());
+        fuel.setGasStationName(dto.gasStationName());
 
-        // Calcula dinamicamente o preço do litro para o Dashboard não quebrar
-        if (liters != null && liters > 0) {
-            fuel.setPricePerLiter(totalValue / liters);
+        if (dto.fuelType() != null && !dto.fuelType().isBlank()) {
+            fuel.setFuelType(com.ipem.api.modules.service.model.enums.FuelType.valueOf(dto.fuelType()));
+        }
+
+        // Usa o valor total já validado acima
+        fuel.setTotalAmount(totalAmount);
+
+        if (dto.pricePerLiter() != null) {
+            fuel.setPricePerLiter(dto.pricePerLiter());
+        } else if (dto.liters() != null && dto.liters() > 0 && fuel.getTotalAmount() != null) {
+            fuel.setPricePerLiter(fuel.getTotalAmount() / dto.liters());
         }
 
         refuelingRepository.save(fuel);

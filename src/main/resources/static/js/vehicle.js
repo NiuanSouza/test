@@ -115,8 +115,17 @@ window.cadastrarVeiculo = async function () {
     const ano = document.getElementById("cad-ano")?.value;
     const categoria = document.getElementById("cad-categoria")?.value;
 
-    if (!prefixo || !placa || (!tipoSelecionado && (!marca || !modelo || !ano))) {
-        window.mostrarToast("Por favor, preencha o Prefixo, Placa e as informações do Modelo.");
+    if (!prefixo || !placa) {
+        window.mostrarToast("Por favor, preencha o Prefixo e a Placa.");
+        const popupConf = document.getElementById('popupConfirmacaoVeiculo');
+        if (popupConf) popupConf.style.display = 'none';
+        return;
+    }
+
+    if (!tipoSelecionado && (!marca || !modelo || !ano)) {
+        window.mostrarToast("Por favor, preencha a Marca, Modelo e Ano para o novo tipo.");
+        const popupConf = document.getElementById('popupConfirmacaoVeiculo');
+        if (popupConf) popupConf.style.display = 'none';
         return;
     }
 
@@ -145,8 +154,8 @@ window.cadastrarVeiculo = async function () {
         const response = await apiFetch("/vehicle/register", { method: "POST", body: JSON.stringify(payload) });
 
         if (response && response.ok) {
-            const popupConf = document.getElementById('popupConfirmacao');
-            const popupSuc = document.getElementById('popupSucesso');
+            const popupConf = document.getElementById('popupConfirmacaoVeiculo');
+            const popupSuc = document.getElementById('popupSucessoVeiculo');
             const msgSucesso = document.getElementById("mensagem-sucesso");
 
             if (popupConf) popupConf.style.display = 'none';
@@ -404,12 +413,30 @@ document.addEventListener("DOMContentLoaded", () => {
     if (document.getElementById("listaVeiculos")) carregarVeiculosDisponiveis();
 
     // Configuração dos botões de cadastro (Tela do Gestor)
-    const popupConfirmacaoCad = document.getElementById('popupConfirmacao');
+    const popupConfirmacaoCad = document.getElementById('popupConfirmacaoVeiculo');
     const btncadastrar = document.getElementById('btncadastrar');
-    const btnConfirmarFinal = document.getElementById('btn-confirmar-final');
+    const btnConfirmarFinal = document.getElementById('btn-confirmar-final-veiculo');
+    const btnCancelarConfirmacao = document.getElementById('btn-cancelar-confirmacao-veiculo');
+    const btnFecharSucesso = document.getElementById('btn-fechar-sucesso-veiculo');
 
     if (btncadastrar && popupConfirmacaoCad) {
         btncadastrar.addEventListener('click', () => {
+            const prefixo = document.getElementById("cad-prefixo")?.value.trim();
+            const placa = document.getElementById("cad-placa")?.value.trim();
+            const tipoSelecionado = document.getElementById("cad-tipo-selecionado")?.value;
+            const marca = document.getElementById("cad-marca")?.value.trim();
+            const modelo = document.getElementById("cad-modelo")?.value.trim();
+            const ano = document.getElementById("cad-ano")?.value.trim();
+
+            if (!prefixo || !placa) {
+                window.mostrarToast("Por favor, preencha o Prefixo e a Placa.");
+                return;
+            }
+            if (!tipoSelecionado && (!marca || !modelo || !ano)) {
+                window.mostrarToast("Por favor, preencha a Marca, Modelo e Ano para o novo tipo.");
+                return;
+            }
+
             popupConfirmacaoCad.style.display = 'flex';
         });
     }
@@ -418,6 +445,21 @@ document.addEventListener("DOMContentLoaded", () => {
         btnConfirmarFinal.onclick = (e) => {
             e.preventDefault();
             cadastrarVeiculo();
+        };
+    }
+
+    if (btnCancelarConfirmacao && popupConfirmacaoCad) {
+        btnCancelarConfirmacao.onclick = (e) => {
+            e.preventDefault();
+            popupConfirmacaoCad.style.display = 'none';
+        };
+    }
+
+    if (btnFecharSucesso) {
+        btnFecharSucesso.onclick = (e) => {
+            e.preventDefault();
+            const popupSuc = document.getElementById('popupSucessoVeiculo');
+            if (popupSuc) popupSuc.style.display = 'none';
         };
     }
 });

@@ -339,7 +339,7 @@ async function criarChamado(event) {
 
 window.excluirChamado = function (id) {
     idChamadoParaExcluir = id;
-    const popupConf = document.getElementById("popupConfirmacao");
+    const popupConf = document.getElementById("popupConfirmacaoMapa");
 
     if (popupConf) {
         popupConf.style.display = "flex";
@@ -351,18 +351,18 @@ window.excluirChamado = function (id) {
 };
 
 window.executarExclusaoChamado = async function (id) {
-    const popupConf = document.getElementById("popupConfirmacao");
+    const popupConf = document.getElementById("popupConfirmacaoMapa");
     if (popupConf) popupConf.style.display = "none";
 
     try {
         const response = await window.apiFetch(`/service/${id}`, { method: "DELETE" });
         removerChamado(id);
-        const popupSuc = document.getElementById("popupSucesso");
+        const popupSuc = document.getElementById("popupSucessoMapa");
         if (popupSuc) popupSuc.style.display = "flex";
     } catch (error) {
         console.warn("Erro ao excluir na API. Excluindo localmente.", error);
         removerChamado(id);
-        const popupSuc = document.getElementById("popupSucesso");
+        const popupSuc = document.getElementById("popupSucessoMapa");
         if (popupSuc) popupSuc.style.display = "flex";
     } finally {
         idChamadoParaExcluir = null;
@@ -540,9 +540,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // --- CONEXÃO DOS BOTÕES DO MODAL DE EXCLUSÃO ---
-    const btnConfirmar = document.getElementById("btn-confirmar-final");
-    const btnCancelar = document.getElementById("btn-cancelar-confirmacao");
-    const btnFecharSucesso = document.getElementById("btn-fechar-sucesso");
+    const btnConfirmar = document.getElementById("btn-confirmar-final-mapa");
+    const btnCancelar = document.getElementById("btn-cancelar-confirmacao-mapa");
+    const btnFecharSucesso = document.getElementById("btn-fechar-sucesso-mapa");
 
     if (btnConfirmar) {
         btnConfirmar.addEventListener("click", () => {
@@ -555,13 +555,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (btnCancelar) {
         btnCancelar.addEventListener("click", () => {
             idChamadoParaExcluir = null;
-            document.getElementById("popupConfirmacao").style.display = "none";
+            document.getElementById("popupConfirmacaoMapa").style.display = "none";
         });
     }
 
     if (btnFecharSucesso) {
         btnFecharSucesso.addEventListener("click", () => {
-            document.getElementById("popupSucesso").style.display = "none";
+            document.getElementById("popupSucessoMapa").style.display = "none";
             window.location.reload();
         });
     }

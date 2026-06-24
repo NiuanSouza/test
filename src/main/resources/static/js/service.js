@@ -225,17 +225,24 @@ window.registrarAbastecimento = async function () {
         const response = await window.apiFetch(`/service/${serviceId}/fuel`, {
             method: 'POST',
             body: JSON.stringify({
-                amount: litrosNum,
-                totalValue: parseFloat(valorTotal),
+                liters: litrosNum,
+                pricePerLiter: precoNum,
+                totalAmount: parseFloat(valorTotal),
+                recordKm: kmNum,
                 date: dataHoraIso,
-                recordKm: kmNum
+                invoice: document.getElementById("nf-abastecimento")?.value || null,
+                gasStationName: null,
+                fuelType: null
             })
         });
 
         if (response && response.ok) {
             window.fecharPopupAbastecimento();
-            const popupSucesso = document.getElementById('popupSucesso');
-            if (popupSucesso) popupSucesso.style.display = 'flex';
+            const popupConfirmacaoAbs = document.getElementById('popupConfirmacaoAbs');
+            if (popupConfirmacaoAbs) popupConfirmacaoAbs.style.display = 'none';
+            
+            const popupSucessoAbs = document.getElementById('popupSucessoAbs');
+            if (popupSucessoAbs) popupSucessoAbs.style.display = 'flex';
         } else if (response) {
             const erro = await response.json();
             window.mostrarToast("Erro ao abastecer: " + (erro.error || "Falha na operação"));
@@ -254,8 +261,8 @@ window.registrarAbastecimento = async function () {
 
 window.fecharPopupSucessoAbastecimento = function() {
     // Essa função pode fechar o popup de sucesso original do sistema
-    const popupSucesso = document.getElementById('popupSucesso');
-    if (popupSucesso) popupSucesso.style.display = 'none';
+    const popupSucessoAbs = document.getElementById('popupSucessoAbs');
+    if (popupSucessoAbs) popupSucessoAbs.style.display = 'none';
 };
 
 
@@ -384,9 +391,9 @@ window.registrarOcorrencia = async function() {
             const supEl = document.getElementById('suporte-ocorrencia');
             if (supEl) supEl.checked = false;
 
-            const popupSucesso = document.getElementById('popupSucessoOcorrencia');
-            if (popupSucesso) {
-                popupSucesso.style.display = 'flex';
+            const popupSucessoOcorrencia = document.getElementById('popupSucessoOcorrencia');
+            if (popupSucessoOcorrencia) {
+                popupSucessoOcorrencia.style.display = 'flex';
             } else {
                 window.mostrarToast("Ocorrência registrada com sucesso!", "toast-aviso1");
             }
@@ -401,8 +408,8 @@ window.registrarOcorrencia = async function() {
 };
 
 window.fecharPopupSucessoOcorrencia = function() {
-    const popup = document.getElementById('popupSucessoOcorrencia');
-    if (popup) popup.style.display = 'none';
+    const popupSucesso = document.getElementById('popupSucessoOcorrencia');
+    if (popupSucesso) popupSucesso.style.display = 'none';
 };
 
 window.carregarChamadosDisponiveis = async function() {
@@ -654,7 +661,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Adiciona listener para fechar o popup de sucesso caso haja o botão OK
-    const btnFecharSucesso = document.getElementById("btn-fechar-sucesso");
+    const btnFecharSucesso = document.getElementById("btn-fechar-sucesso-abs");
     if (btnFecharSucesso) {
         btnFecharSucesso.addEventListener("click", window.fecharPopupSucessoAbastecimento);
     }

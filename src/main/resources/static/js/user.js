@@ -68,8 +68,8 @@ window.cadastrarUsuario = async function () {
         });
 
         if (response && response.ok) {
-            const popupConf = document.getElementById('popupConfirmacao');
-            const popupSuc = document.getElementById('popupSucesso');
+            const popupConf = document.getElementById('popupConfirmacaoUsuario');
+            const popupSuc = document.getElementById('popupSucessoUsuario');
 
             if (popupConf) popupConf.style.display = 'none';
 
@@ -283,13 +283,12 @@ window.salvarConfiguracoesPerfil = async function () {
 
 document.addEventListener("DOMContentLoaded", () => {
     // ---- EVENTOS DA TELA DE CADASTRO ----
-    const popupConfirmacao = document.getElementById('popupConfirmacao');
-    const popupSucesso = document.getElementById('popupSucesso');
-
+    const popupConfirmacao = document.getElementById('popupConfirmacaoUsuario');
     const btnCadastrar = document.getElementById('btncadastrar');
-    const btnCancelarConf = document.getElementById('btn-cancelar-confirmacao');
-    const btnConfirmarFinal = document.getElementById('btn-confirmar-final');
-    const btnFecharSucesso = document.getElementById('btn-fechar-sucesso');
+    const btnCancelarConf = document.getElementById('btn-cancelar-confirmacao-usuario');
+    const btnConfirmarFinal = document.getElementById('btn-confirmar-final-usuario');
+    const popupSucesso = document.getElementById('popupSucessoUsuario');
+    const btnFecharSucesso = document.getElementById('btn-fechar-sucesso-usuario');
 
     // Abre Modal de Confirmação
     if (btnCadastrar && popupConfirmacao) {

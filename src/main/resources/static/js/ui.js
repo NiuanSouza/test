@@ -106,14 +106,14 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- FLUXO DE VALIDAÇÃO VISUAL DO ABASTECIMENTO ---
     const popupAbs = document.getElementById('popupAbastecimento');
-    const popupConf = document.getElementById('popupConfirmacao') || document.getElementById('popupConfirmacaoAbs');
-    const popupSuc = document.getElementById('popupSucesso');
+    const popupConf = document.getElementById('popupConfirmacaoAbs');
+    const popupSuc = document.getElementById('popupSucessoAbs');
 
     const btnVoltarAbs = document.getElementById('btn-voltar') || document.querySelector('#popupAbastecimento .btn-voltar');
     const btnSalvarAbs = document.getElementById('btn-salvar-abastecimento');
-    const btnCancelaConf = document.getElementById('btn-cancelar-confirmacao') || document.querySelector('#popupConfirmacao .btn-voltar');
-    const btnConfirmaFin = document.getElementById('btn-confirmar-final');
-    const btnFechaSuc = document.getElementById('btn-fechar-sucesso');
+    const btnCancelaConf = document.getElementById('btn-cancelar-confirmacao-abs');
+    const btnConfirmaFin = document.getElementById('btn-confirmar-final-abs');
+    const btnFechaSuc = document.getElementById('btn-fechar-sucesso-abs');
 
     // Retorna para a tela base
     if (btnVoltarAbs) {
@@ -327,60 +327,5 @@ function salvarEdicaoKM() {
 // que se comunicam com a API do backend.
 
 
-const popupConfirmacao = document.getElementById("popupConfirmacao");
-const btnCancelarConfirmacao = document.getElementById("btn-cancelar-confirmacao");
-const btnConfirmarFinal = document.getElementById("btn-confirmar-final");
-
-// Variável para guardar o ID do chamado que o usuário quer apagar
-let idChamadoParaDeletar = null;
-
-/**
- * Função global para abrir o pop-up de confirmação
- * @param {number|string} id - O ID do chamado que será excluído
- */
-window.abrirPopupConfirmacao = function(id) {
-    idChamadoParaDeletar = id;
-    if (popupConfirmacao) {
-        popupConfirmacao.style.display = "flex"; // Abre o pop-up centralizado
-    }
-};
-
-/**
- * Função global para fechar o pop-up
- */
-window.fecharPopupConfirmacao = function() {
-    idChamadoParaDeletar = null;
-    if (popupConfirmacao) {
-        popupConfirmacao.style.display = "none"; // Esconde o pop-up
-    }
-};
-
-// Configura o botão "Voltar" (Cancelar) para fechar o pop-up
-if (btnCancelarConfirmacao) {
-    btnCancelarConfirmacao.addEventListener("click", window.fecharPopupConfirmacao);
-}
-
-// Configura o botão "Confirmar" para executar a exclusão
-if (btnConfirmarFinal) {
-    btnConfirmarFinal.addEventListener("click", function() {
-        if (!idChamadoParaDeletar) return;
-
-        // 1. Lógica de exclusão delegada para a função do mapa/serviço correspondente
-        if (typeof window.executarExclusaoChamado === "function") {
-            window.executarExclusaoChamado(idChamadoParaDeletar);
-        } else {
-            console.log("Chamado excluído com ID:", idChamadoParaDeletar);
-            if (typeof window.mostrarToast === "function") {
-                window.mostrarToast("Chamado excluído com sucesso!", "toast-aviso1");
-            }
-            window.fecharPopupConfirmacao();
-        }
-    });
-}
-
-// Fecha o pop-up se o usuário clicar no fundo escuro (fora do card de confirmação)
-window.addEventListener("click", function(event) {
-    if (event.target === popupConfirmacao) {
-        window.fecharPopupConfirmacao();
-    }
-});
+// O fluxo de exclusão de chamados foi isolado no módulo mapa-gestor.js 
+// usando IDs próprios, eliminando a concorrência global.
