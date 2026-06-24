@@ -21,11 +21,8 @@ jobs:
         distribution: 'temurin'
         cache: maven
 
-    - name: Ensure mvnw is executable
-      run: chmod +x ./mvnw
-
     - name: Build with Maven
-      run: ./mvnw -B package -DskipTests --file pom.xml
+      run: mvn -B package -DskipTests --file pom.xml
 
     - name: Upload artifact
       uses: actions/upload-artifact@v4
