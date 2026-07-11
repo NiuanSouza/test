@@ -17,6 +17,7 @@ export class ApiError extends Error {
   }
 }
 
+
 async function apiFetch<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
   const { requireAuth = true, headers, ...customOptions } = options;
 
