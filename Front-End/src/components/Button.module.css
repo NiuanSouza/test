@@ -1,0 +1,88 @@
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12.5px 24px;
+  border: none;
+  border-radius: var(--radius-pill);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Primary (.btn-aceitar, #btn1) */
+.primary {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+}
+
+.primary:hover:not(:disabled) {
+  background-color: var(--color-primary-light);
+  transform: translateY(-1px);
+}
+
+.primary:active:not(:disabled) {
+  background-color: var(--color-primary-hover);
+  transform: scale(0.98);
+}
+
+/* Secondary (.btn-voltar, .btn-cancelar) */
+.secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+}
+
+.secondary:hover:not(:disabled) {
+  background-color: var(--color-surface-alt);
+}
+
+.secondary:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+/* Danger (.btn-excluir) */
+.danger {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger-text);
+  border-radius: 10px; /* specific for cards */
+  padding: 9px 10px;
+  font-size: 12px;
+}
+
+.danger:hover:not(:disabled) {
+  background-color: #ffd2d2;
+  transform: translateY(-1px);
+}
+
+/* Info (.btn-mapa-card) */
+.info {
+  background-color: var(--color-surface-alt);
+  color: var(--color-primary);
+  border-radius: 10px;
+  padding: 9px 10px;
+  font-size: 12px;
+}
+
+.info:hover:not(:disabled) {
+  background-color: #dbe4ff;
+  transform: translateY(-1px);
+}

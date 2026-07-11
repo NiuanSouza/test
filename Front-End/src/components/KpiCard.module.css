@@ -1,0 +1,56 @@
+.kpiCard {
+  background: var(--color-primary-gradient);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  color: var(--color-white);
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpiCard:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-card);
+}
+
+.iconContainer {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.iconContainer svg {
+  color: var(--color-white);
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.value {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 4px 0 0;
+}
+
+.subtitle {
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin: 4px 0 0;
+}

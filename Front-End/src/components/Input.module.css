@@ -1,0 +1,74 @@
+.group {
+  margin: 1em 0;
+  width: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+}
+
+.input {
+  font-size: 100%;
+  padding: 0.8em;
+  outline: none;
+  border: 2px solid var(--color-primary);
+  background-color: transparent;
+  border-radius: var(--radius-lg);
+  width: 100%;
+  transition: border-color 0.3s;
+}
+
+.hasToggle {
+  padding-right: 45px;
+}
+
+.hasError {
+  border-color: var(--color-danger);
+}
+
+.label {
+  font-size: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  padding: 0.8em;
+  margin-left: 0.5em;
+  pointer-events: none;
+  transition: 0.3s ease;
+  color: var(--color-primary);
+}
+
+.input:focus ~ .label,
+.input:valid ~ .label,
+.input:not(:placeholder-shown) ~ .label {
+  transform: translateY(-50%) scale(0.9);
+  margin-left: 1.3em;
+  padding: 0.4em;
+  background-color: var(--color-white);
+}
+
+.toggle {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  padding: 0;
+}
+
+.errorMessage {
+  color: var(--color-danger);
+  font-size: 12px;
+  margin-top: 4px;
+  margin-left: 14px;
+}
