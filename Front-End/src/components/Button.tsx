@@ -8,16 +8,17 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   isLoading?: boolean;
 }
 
-export function Button({ 
+export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(({ 
   children, 
   variant = "primary", 
   isLoading = false, 
   className,
   disabled,
   ...props 
-}: ButtonProps) {
+}, ref) => {
   return (
     <button
+      ref={ref}
       className={clsx(styles.button, styles[variant], className)}
       disabled={disabled || isLoading}
       {...props}
@@ -25,4 +26,6 @@ export function Button({
       {isLoading ? <Loader2 className={styles.spinner} size={18} /> : children}
     </button>
   );
-}
+});
+
+Button.displayName = "Button";

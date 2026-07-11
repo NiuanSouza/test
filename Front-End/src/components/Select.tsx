@@ -15,18 +15,19 @@ interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   options: SelectOption[];
 }
 
-export function Select({
+export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(({
   label,
   error,
   options,
   className,
   required,
   ...props
-}: SelectProps) {
+}, ref) => {
   return (
     <div className={clsx(styles.group, className)}>
       <div className={styles.inputContainer}>
         <select
+          ref={ref}
           className={clsx(styles.input, error && styles.hasError)}
           required={required}
           {...props}
@@ -45,4 +46,6 @@ export function Select({
       {error && <span className={styles.errorMessage}>{error}</span>}
     </div>
   );
-}
+});
+
+Select.displayName = "Select";

@@ -11,7 +11,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   showToggle?: boolean;
 }
 
-export function Input({
+export const Input = React.forwardRef<HTMLInputElement, InputProps>(({
   label,
   error,
   showToggle,
@@ -19,7 +19,7 @@ export function Input({
   type = "text",
   required,
   ...props
-}: InputProps) {
+}, ref) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   
   const isPassword = type === "password";
@@ -29,6 +29,7 @@ export function Input({
     <div className={clsx(styles.group, className)}>
       <div className={styles.inputContainer}>
         <input
+          ref={ref}
           type={currentType}
           className={clsx(styles.input, error && styles.hasError, isPassword && showToggle && styles.hasToggle)}
           placeholder=" "
@@ -53,4 +54,6 @@ export function Input({
       {error && <span className={styles.errorMessage}>{error}</span>}
     </div>
   );
-}
+});
+
+Input.displayName = "Input";

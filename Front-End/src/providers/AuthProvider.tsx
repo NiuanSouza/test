@@ -67,7 +67,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   if (isLoading) {
-    return null; // Or a loading spinner
+    return (
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", minHeight: "100vh", backgroundColor: "var(--color-surface)" }}>
+        <div style={{ 
+          width: "48px", height: "48px", border: "4px solid rgba(0, 32, 128, 0.1)", 
+          borderLeftColor: "var(--color-primary)", borderRadius: "50%", 
+          animation: "spin 1s linear infinite" 
+        }} />
+        <p style={{ marginTop: "16px", color: "var(--color-primary)", fontWeight: 600 }}>Carregando SIVA...</p>
+      </div>
+    );
   }
 
   return (
