@@ -35,7 +35,7 @@ export default function RegisterUserPage() {
     setIsLoading(true);
 
     try {
-      await apiClient.post("/auth/register", formData);
+      await apiClient.post("/user/register", formData);
       toast.success("Usuário cadastrado com sucesso!");
       router.push("/technicians");
     } catch (error: any) {

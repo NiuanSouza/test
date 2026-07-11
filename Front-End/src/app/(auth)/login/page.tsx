@@ -29,7 +29,7 @@ export default function LoginPage() {
     setIsLoading(true);
     try {
       const payload: LoginRequest = { registration, password };
-      const data = await apiClient.post<LoginResponse>("/auth/login", payload, { requireAuth: false });
+      const data = await apiClient.post<LoginResponse>("/user/login", payload, { requireAuth: false });
       
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem("userName", data.name);
@@ -51,7 +51,15 @@ export default function LoginPage() {
   return (
     <div className={styles.loginForm}>
       <div className={styles.logoContainer}>
-        <Image src="/images/logosiva.png" alt="SIVA Logo" width={120} height={120} className={styles.logo} />
+        <Image 
+          src="/images/logosiva.png" 
+          alt="SIVA Logo" 
+          width={120} 
+          height={120} 
+          className={styles.logo}
+          style={{ width: "auto", height: "auto" }}
+          priority
+        />
       </div>
       
       <h1 className={styles.title}>Bem-vindo</h1>

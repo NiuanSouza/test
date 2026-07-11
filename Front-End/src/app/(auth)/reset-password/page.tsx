@@ -24,7 +24,7 @@ export default function ResetPasswordPage() {
 
     setIsLoading(true);
     try {
-      await apiClient.post("/auth/reset-password", { email }, { requireAuth: false });
+      await apiClient.post("/user/reset-password", { email }, { requireAuth: false });
       setSuccess(true);
       toast.success("Instruções enviadas para o seu e-mail!");
     } catch (error: any) {
@@ -37,7 +37,15 @@ export default function ResetPasswordPage() {
   return (
     <div className={styles.loginForm}>
       <div className={styles.logoContainer}>
-        <Image src="/images/logosiva.png" alt="SIVA Logo" width={100} height={100} className={styles.logo} />
+        <Image 
+          src="/images/logosiva.png" 
+          alt="SIVA Logo" 
+          width={100} 
+          height={100} 
+          className={styles.logo}
+          style={{ width: "auto", height: "auto" }}
+          priority
+        />
       </div>
       
       <h1 className={styles.title}>Recuperar Senha</h1>
