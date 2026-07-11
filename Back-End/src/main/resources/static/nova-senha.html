@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIVA - Recuperar Senha</title>
+    <link rel="stylesheet" href="css/index.css">
+    <script src="js/basic.js"></script>
+    <style>
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+        }
+        .box {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .btn-confirm {
+            background-color: #004d40;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .btn-confirm:hover {
+            background-color: #00332a;
+        }
+    </style>
+</head>
+<body>
+
+<div id="toast" class="toast"></div>
+
+<div class="container">
+    <div class="box">
+        <h2>Confirmação de Redefinição de Senha</h2>
+        <p>Clique no botão abaixo para redefinir sua senha para <strong>Troca123</strong>.</p>
+        <button id="btnConfirmar" class="btn-confirm">Confirmar Redefinição</button>
+        <p style="margin-top: 15px;"><a href="index.html">Voltar ao Login</a></p>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+
+        if (!token) {
+            window.mostrarToast("Link inválido. Token não encontrado.");
+            document.getElementById("btnConfirmar").disabled = true;
+        }
+
+        document.getElementById("btnConfirmar").addEventListener("click", async () => {
+            try {
+                const response = await window.apiFetch("/user/reset-password-confirm", {
+                    method: "POST",
+                    body: JSON.stringify({ token: token })
+                });
+
+                if (response && response.ok) {
+                    window.mostrarToast("Senha alterada com sucesso! Redirecionando...", "toast-aviso1");
+                    setTimeout(() => {
+                        window.location.href = "index.html";
+                    }, 2500);
+                } else if (response) {
+                    const errorData = await response.json().catch(() => ({}));
+                    const mensagem = errorData.error || "Erro ao confirmar alteração de senha.";
+                    window.mostrarToast(mensagem);
+                }
+            } catch (error) {
+                console.error("Erro na confirmação:", error);
+                window.mostrarToast("Erro ao conectar com o servidor.");
+            }
+        });
+    });
+</script>
+
+</body>
+</html>

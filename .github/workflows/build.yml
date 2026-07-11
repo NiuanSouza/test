@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Back-End
 
     steps:
     - name: Checkout repository
@@ -28,5 +31,5 @@ jobs:
       uses: actions/upload-artifact@v5
       with:
         name: api-0.0.1-SNAPSHOT
-        path: target/api-0.0.1-SNAPSHOT.jar
+        path: Back-End/target/api-0.0.1-SNAPSHOT.jar
         retention-days: 7

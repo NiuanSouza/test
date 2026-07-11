@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Chamados - Gestor</title>
+    <link rel="stylesheet" href="css/componentes.css">
+    <link rel="stylesheet" href="css/mapa-gestor.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+</head>
+
+<body class="pagina-mapa-gestor">
+    <div id="topbar-container"></div>
+    <div id="sidebar-container"></div>
+
+    <div class="container-mapa-gestor">
+        <div class="painel-mapa">
+            <h2 class="mapa-titulo">Mapa de Chamados</h2>
+            <div id="mapaGestor" class="mapa-container"></div>
+            <div class="mapa-legenda">
+                <span class="legenda-item"><i class="marcador-novo"></i> Novo</span>
+                <span class="legenda-item"><i class="marcador-pendente"></i> Pendente</span>
+                <span class="legenda-item"><i class="marcador-ativo"></i> Ativo</span>
+            </div>
+        </div>
+
+        <div class="painel-lateral">
+            <div class="card-formulario">
+                <h3 class="titulo-formulario">Novo Chamado</h3>
+
+                <form id="formChamado" class="formulario-chamado">
+                    <div class="campo-grupo campo-cep">
+                        <label for="cep">CEP *</label>
+                        <div class="campo-cep-linha">
+                            <input type="text" id="cep" name="cep" inputmode="numeric" maxlength="9"
+                                placeholder="00000-000" required>
+                            <button type="button" id="btnBuscarCep" class="btn-marcar-mapa">
+                                Buscar CEP
+                            </button>
+                        </div>
+                        <p id="resumoLocalizacao" class="resumo-localizacao">
+                            O ponto do chamado sera definido com base no CEP informado. O endereco abaixo pode ser ajustado como complemento.
+                        </p>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="endereco">Endereco *</label>
+                        <input type="text" id="endereco" name="endereco" placeholder="Rua, numero, complemento" required>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="tipoServico">Tipo de Servico *</label>
+                        <select id="tipoServico" name="tipoServico" required>
+                            <option value="">Selecione...</option>
+                            <option value="manutencao-corretiva">Manutencao Corretiva</option>
+                            <option value="manutencao-preventiva">Manutencao Preventiva</option>
+                            <option value="inspecao">Inspecao</option>
+                            <option value="instalacao">Instalacao</option>
+                            <option value="reparo">Reparo</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="tipoCNH">Tipo de CNH Exigida *</label>
+                        <select id="tipoCNH" name="tipoCNH" required>
+                            <option value="">Selecione...</option>
+                            <option value="cnh-a">CNH Categoria A</option>
+                            <option value="cnh-b">CNH Categoria B</option>
+                            <option value="cnh-c">CNH Categoria C</option>
+                            <option value="cnh-d">CNH Categoria D</option>
+                            <option value="cnh-e">CNH Categoria E</option>
+                            <option value="nenhuma">Nenhuma exigencia</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="tecnicoResponsavel">Tecnico Responsavel *</label>
+                        <select id="tecnicoResponsavel" name="tecnicoResponsavel" required>
+                            <option value="">Selecione...</option>
+                            <option value="ana-paula">Ana Paula Martins</option>
+                            <option value="bruno-lima">Bruno Lima</option>
+                            <option value="carla-mendes">Carla Mendes</option>
+                            <option value="juliana-costa">Juliana Costa</option>
+                        </select>
+                    </div>
+
+                    <div class="campo-grupo">
+                        <label for="observacoes">Observacoes</label>
+                        <textarea id="observacoes" name="observacoes" placeholder="Informacoes adicionais sobre o chamado" rows="3"></textarea>
+                    </div>
+
+                    <div class="acoes-formulario">
+                        <button type="submit" class="btn-criar">Criar Chamado</button>
+                        <button type="reset" class="btn-limpar">Limpar</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-lista">
+                <h3 class="titulo-lista">Chamados Criados</h3>
+                <div id="listaChamadosGestor" class="lista-chamados-gestor">
+                    <p class="lista-vazia">Nenhum chamado criado ainda.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modalDetalheChamado" class="sobreposicao">
+        <div class="popup-container modal-detalhe">
+            <h2 class="popup-titulo" id="modalTitulo">Detalhes do Chamado</h2>
+            <div class="popup-conteudo" id="modalConteudo"></div>
+            <div class="popup-botoes">
+                <button id="btnEditarChamado" class="btn-aceitar" style="display: none;">Editar</button>
+                <button id="btnCancelarChamado" class="btn-cancelar" style="display: none;">Cancelar</button>
+            </div>
+            <button class="btn-fechar-absoluto" onclick="fecharModalDetalhes()">X</button>
+        </div>
+    </div>
+
+    <!-- POPUP DE CONFIRMAÇÃO DE EXCLUSÃO -->
+    <div id="popupConfirmacaoMapa" class="popup" style="display: none">
+      <div class="popup-content">
+        <h2>Confirmar Exclusão?</h2>
+        <p>Você tem certeza que deseja excluir este chamado?</p>
+        <div class="popup-buttons">
+          <button id="btn-cancelar-confirmacao-mapa" class="btn-voltar">
+            Cancelar
+          </button>
+          <button id="btn-confirmar-final-mapa" class="btn-aceitar">
+            Confirmar
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- POPUP DE SUCESSO -->
+    <div id="popupSucessoMapa" class="popup" style="display: none">
+      <div class="popup-content">
+        <h2>Sucesso!</h2>
+        <p>Operação realizada com sucesso.</p>
+        <div class="popup-buttons">
+          <button id="btn-fechar-sucesso-mapa" class="btn-aceitar">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-aviso" class="toast-hidden">Preencha todos os campos!</div>
+    <div id="toast-aviso1" class="toast-hidden1">Preencha todos os campos!</div>
+
+    <script src="js/basic.js"></script>
+    <script src="js/componentes.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="js/mapa-gestor.js"></script>
+    <script>
+        injetarLayout("Gerenciador de Chamados");
+    </script>
+</body>
+
+</html>
