@@ -236,7 +236,7 @@ public class ServiceService {
             var end = yearMonth.atEndOfMonth().plusDays(1).atStartOfDay();
 
             // Busca os chamados que ocorreram nesta janela de tempo
-            var services = serviceRepository.findByDepartureTimeBetweenAndIsActiveTrue(start, end);
+            List<Service> services = serviceRepository.findByDepartureTimeBetweenAndIsActiveTrue(start, end);
 
             // Cálculos de KPIs daquele mês
             int totalCalls = services.size();
@@ -357,11 +357,18 @@ public class ServiceService {
 
     @Transactional
     public Service createPendingService(PendingServiceRequestDTO dto) {
+        com.ipem.api.modules.user.model.User assignedUser = null;
+        if (dto.tecnico() != null && !dto.tecnico().isBlank() && !dto.tecnico().equalsIgnoreCase("Não Atribuído")) {
+            assignedUser = userRepository.findById(dto.tecnico()).orElse(null);
+        }
+
         Service service = Service.builder()
                 .destinationRequester(dto.endereco())
                 .description(dto.observacoes() != null ? dto.observacoes() : dto.tipoServico())
+                .serviceType(dto.tipoServico())
+                .cnhType(dto.tipoCNH())
+                .user(assignedUser)
                 .isActive(true)
-                // Note: user and car are null
                 .build();
         
         service = serviceRepository.save(service);
@@ -384,13 +391,14 @@ public class ServiceService {
         List<Service> services = getPendingServices();
         return services.stream().map(service -> {
             ServiceAddresses address = serviceAddressesRepository.findByServiceId(service.getId()).stream().findFirst().orElse(null);
+            String tecnicoName = service.getUser() != null ? service.getUser().getName() : "Não atribuído";
             return new PendingServiceResponseDTO(
                     service.getId(),
                     address != null ? address.getStreet() : service.getDestinationRequester(),
                     address != null ? address.getZipCode() : "",
-                    service.getDescription(), // assuming this holds the service type for now
-                    "Nenhuma", // tipoCNH mock
-                    "Não atribuído", // tecnico mock
+                    service.getServiceType() != null ? service.getServiceType() : "Não informado",
+                    service.getCnhType() != null ? service.getCnhType() : "Nenhuma",
+                    tecnicoName,
                     address != null ? address.getLatitude() : null,
                     address != null ? address.getLongitude() : null,
                     service.getDescription(),
@@ -468,5 +476,80 @@ public class ServiceService {
             car.setAvailable(true);
             carRepository.save(car);
         }
+    }
+
+    @Transactional
+    public Service updateServiceDetails(Long serviceId, java.util.Map<String, Object> payload) {
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+
+        if (payload.containsKey("destinationRequester")) service.setDestinationRequester((String) payload.get("destinationRequester"));
+        if (payload.containsKey("description")) service.setDescription((String) payload.get("description"));
+        if (payload.containsKey("serviceType")) service.setServiceType((String) payload.get("serviceType"));
+        if (payload.containsKey("cnhType")) service.setCnhType((String) payload.get("cnhType"));
+        if (payload.containsKey("priority")) service.setPriority(com.ipem.api.modules.service.model.enums.Priority.valueOf((String) payload.get("priority")));
+        if (payload.containsKey("departureKm") && payload.get("departureKm") != null) service.setDepartureKm(Float.parseFloat(payload.get("departureKm").toString()));
+        if (payload.containsKey("arrivalKm") && payload.get("arrivalKm") != null) service.setArrivalKm(Float.parseFloat(payload.get("arrivalKm").toString()));
+        
+        if (payload.containsKey("userRegistration")) {
+            String userReg = (String) payload.get("userRegistration");
+            var user = userRepository.findById(userReg).orElseThrow(() -> new RuntimeException("Usuário não encontrado."));
+            service.setUser(user);
+        }
+
+        if (payload.containsKey("carPrefix")) {
+            String prefix = (String) payload.get("carPrefix");
+            var car = carRepository.findById(prefix).orElseThrow(() -> new RuntimeException("Veículo não encontrado."));
+            service.setCar(car);
+        }
+
+        return serviceRepository.save(service);
+    }
+
+    @Transactional
+    public Service toggleServiceActive(Long serviceId) {
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+        service.setIsActive(!service.getIsActive());
+        return serviceRepository.save(service);
+    }
+
+    @Transactional
+    public Refueling updateRefueling(Long recordId, java.util.Map<String, Object> payload) {
+        Refueling refueling = refuelingRepository.findById(recordId)
+                .orElseThrow(() -> new RuntimeException("Abastecimento não encontrado."));
+
+        if (payload.containsKey("liters")) refueling.setLiters(Float.parseFloat(payload.get("liters").toString()));
+        if (payload.containsKey("pricePerLiter")) refueling.setPricePerLiter(Double.parseDouble(payload.get("pricePerLiter").toString()));
+        if (payload.containsKey("totalAmount")) refueling.setTotalAmount(Double.parseDouble(payload.get("totalAmount").toString()));
+        if (payload.containsKey("gasStationName")) refueling.setGasStationName((String) payload.get("gasStationName"));
+        if (payload.containsKey("invoice")) refueling.setInvoice((String) payload.get("invoice"));
+        if (payload.containsKey("fuelType")) refueling.setFuelType(com.ipem.api.modules.service.model.enums.FuelType.valueOf((String) payload.get("fuelType")));
+
+        return refuelingRepository.save(refueling);
+    }
+
+    @Transactional
+    public Refueling toggleRefuelingActive(Long recordId) {
+        Refueling refueling = refuelingRepository.findById(recordId)
+                .orElseThrow(() -> new RuntimeException("Abastecimento não encontrado."));
+        refueling.setIsActive(!refueling.getIsActive());
+        return refuelingRepository.save(refueling);
+    }
+
+    @Transactional
+    public void recordServiceEvent(Long serviceId, RecordType recordType, String note) {
+        Service service = serviceRepository.findById(serviceId)
+                .orElseThrow(() -> new RuntimeException("Serviço não encontrado."));
+        if (!Boolean.TRUE.equals(service.getIsActive())) {
+            throw new RuntimeException("Este serviço já foi encerrado.");
+        }
+        Record record = new Record();
+        record.setService(service);
+        record.setRecordType(recordType);
+        record.setRecordDate(LocalDateTime.now());
+        record.setRecordKm(service.getCar() != null ? service.getCar().getCurrentKm() : 0f);
+        record.setNote(note);
+        recordRepository.save(record);
     }
 }

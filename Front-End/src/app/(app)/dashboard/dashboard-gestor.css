@@ -1,0 +1,334 @@
+/* =============================================
+   TELA INICIAL GESTOR — CSS PRINCIPAL
+   ============================================= */
+
+/* DASHBOARD HERO */
+.dashboard-gestor-hero {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 16px 40px rgba(2, 22, 79, 0.1);
+    padding: 24px;
+    background: linear-gradient(135deg, #002080 0%, #0d36b1 55%, #eef3ff 55%, #f7f9ff 100%);
+    color: #ffffff;
+    margin-bottom: 22px;
+}
+
+.dashboard-topo {
+    margin-bottom: 18px;
+}
+
+.dashboard-topo h2 {
+    font-size: 28px;
+    margin: 8px 0 6px 0;
+    color: #ffffff;
+}
+
+.dashboard-topo p {
+    max-width: 600px;
+    font-size: 15px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* KPI GRID */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 14px;
+}
+
+.dashboard-card {
+    min-height: 148px;
+    padding: 18px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.95);
+    color: #0a1738;
+    box-shadow: 0 12px 24px rgba(1, 19, 70, 0.14);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    border-top: 5px solid #002080;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 16px 32px rgba(1, 19, 70, 0.18);
+}
+
+.dashboard-label {
+    font-size: 14px;
+    font-weight: 700;
+    color: #3e4f7d;
+    display: block;
+}
+
+.dashboard-valor {
+    font-size: 30px;
+    line-height: 1.1;
+    color: #002080;
+    display: block;
+    margin: 12px 0;
+}
+
+.dashboard-info {
+    font-size: 13px;
+    color: #5a6785;
+    display: block;
+}
+
+/* CORES DOS CARDS */
+.destaque-disponivel { border-top-color: #14804a; }
+.destaque-manutencao { border-top-color: #d40000; }
+.destaque-uso { border-top-color: #f0a500; }
+.destaque-tecnicos { border-top-color: #2d7ff9; }
+.destaque-servico { border-top-color: #6f42c1; }
+.destaque-combustivel { border-top-color: #e85d04; }
+.destaque-preco { border-top-color: #007f5f; }
+.destaque-litros { border-top-color: #9c36b5; }
+
+/* CARD HISTÓRICO */
+.card-historico-gestor {
+    width: 100%;
+    border-radius: 24px;
+    box-shadow: 0 16px 40px rgba(2, 22, 79, 0.1);
+    padding: 24px;
+    background: linear-gradient(180deg, #f7f9ff 0%, #eef3ff 100%);
+    border: 1px solid rgba(13, 54, 177, 0.12);
+}
+
+.card-historico-topo {
+    display: flex;
+    justify-content: space-between;
+    gap: 18px;
+    align-items: flex-start;
+    margin-bottom: 18px;
+}
+
+.card-historico-topo h2 {
+    color: #002080;
+    font-size: 28px;
+    margin: 8px 0 6px 0;
+}
+
+.card-historico-topo p {
+    max-width: 620px;
+    font-size: 15px;
+    color: #4e5f86;
+}
+
+/* RESUMO CARDS */
+.historico-resumo {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(120px, 1fr));
+    gap: 12px;
+    min-width: min(100%, 370px);
+}
+
+.historico-resumo-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 32, 128, 0.08);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 0 10px 24px rgba(1, 19, 70, 0.08);
+}
+
+.historico-resumo-card span {
+    display: block;
+    font-size: 13px;
+    color: #667694;
+    margin-bottom: 10px;
+}
+
+.historico-resumo-card strong {
+    font-size: 24px;
+    color: #002080;
+    display: block;
+}
+
+/* LISTA DE CHAMADOS */
+.lista-chamados-gestor-dash {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 18px;
+}
+
+.item-chamado-dash {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    background-color: #ffffff;
+    border: 1px solid rgba(0, 32, 128, 0.08);
+    border-radius: 18px;
+    padding: 18px;
+    font-size: 14px;
+    box-shadow: 0 10px 24px rgba(1, 19, 70, 0.08);
+    border-left: 6px solid #002080;
+    transition: transform 0.15s ease;
+}
+
+.item-chamado-dash:hover {
+    transform: translateX(2px);
+}
+
+.item-andamento-dash {
+    border-left-color: #f0a500;
+}
+
+.item-finalizado-dash {
+    border-left-color: #14804a;
+}
+
+.item-chamado-principal {
+    flex: 1;
+    min-width: 0;
+}
+
+.item-chamado-topo {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    margin-bottom: 8px;
+}
+
+.item-chamado-dash h3 {
+    color: #10234f;
+    font-size: 20px;
+    margin-bottom: 6px;
+}
+
+.chamado-numero {
+    font-weight: 700;
+    font-size: 18px;
+    color: #002080;
+}
+
+.dados-veiculo {
+    font-size: 15px;
+    color: #41516f;
+    margin-top: 3px;
+}
+
+.meta-chamado-dash {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+}
+
+.meta-chamado-dash span {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background-color: #edf2ff;
+    color: #28406d;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.status-chip-dash {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    color: #ffffff;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+}
+
+.status-andamento-dash { background-color: #f0a500; }
+.status-finalizado-dash { background-color: #339933; }
+
+.btn-status-dash {
+    border: 0;
+    border-radius: 14px;
+    padding: 10px 14px;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 12px;
+    white-space: nowrap;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    box-shadow: 0 10px 20px rgba(13, 54, 177, 0.18);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-status-dash.status-andamento-dash { background-color: #f0a500; }
+.btn-status-dash.status-finalizado-dash { background-color: #339933; }
+
+.btn-status-dash:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 24px rgba(13, 54, 177, 0.24);
+}
+
+/* BTN HISTORICO COMPLETO */
+.btn-historico-completo {
+    margin: 12px auto 0 auto;
+    display: block;
+    width: min(260px, 100%);
+    border: 0;
+    border-radius: 14px;
+    background-color: #002080;
+    color: white;
+    padding: 10px 16px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.btn-historico-completo:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 12px 28px rgba(0, 32, 128, 0.22);
+}
+
+/* NENHUM REGISTRO */
+.nenhum-registro-dash {
+    background-color: #f8f9ff;
+    border: 1px dashed rgba(0, 32, 128, 0.28);
+    padding: 26px;
+    border-radius: 18px;
+    text-align: center;
+    color: #2c3d66;
+    font-weight: 700;
+}
+
+/* RESPONSIVE */
+@media (max-width: 768px) {
+    .dashboard-gestor-hero {
+        padding: 18px 16px;
+        background: linear-gradient(180deg, #002080 0%, #0d36b1 36%, #eef3ff 36%, #f7f9ff 100%);
+    }
+
+    .dashboard-topo h2 { font-size: 23px; }
+
+    .dashboard-grid { grid-template-columns: 1fr; }
+
+    .card-historico-topo { flex-direction: column; }
+
+    .historico-resumo {
+        grid-template-columns: 1fr;
+        width: 100%;
+        min-width: 0;
+    }
+
+    .item-chamado-dash {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .item-chamado-topo { flex-direction: column; align-items: flex-start; }
+
+    .btn-status-dash, .btn-historico-completo { 
+        width: 100%; 
+        min-height: 48px;
+    }
+}

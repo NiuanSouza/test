@@ -8,5 +8,7 @@ public interface CarTypeRepository extends JpaRepository<CarType, Integer> {
 
     List<CarType> findByCategoryAndIsActiveTrue(String category);
 
+    List<CarType> findByIsActiveTrue();
+
     List<CarType> findByModelContainingIgnoreCaseAndIsActiveTrue(String model);
 }

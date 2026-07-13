@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 import java.util.Optional;
 import com.ipem.api.modules.service.dto.PendingServiceRequestDTO;
+import com.ipem.api.modules.service.repository.ServiceAddressesRepository;
+import com.ipem.api.modules.service.model.enums.RecordType;
 
 @RestController
 @RequestMapping("/service")
@@ -16,9 +18,11 @@ import com.ipem.api.modules.service.dto.PendingServiceRequestDTO;
 public class ServiceController {
 
     private final ServiceService serviceService;
+    private final ServiceAddressesRepository serviceAddressesRepository;
 
-    public ServiceController(ServiceService serviceService) {
+    public ServiceController(ServiceService serviceService, ServiceAddressesRepository serviceAddressesRepository) {
         this.serviceService = serviceService;
+        this.serviceAddressesRepository = serviceAddressesRepository;
     }
 
     @PostMapping("/start")
@@ -44,15 +48,20 @@ public class ServiceController {
         String registration = SecurityContextHolder.getContext().getAuthentication().getName();
         var service = serviceService.findActiveServiceByUser(registration);
         if (service != null) {
-            return ResponseEntity.ok(Map.of(
-                    "active", true, "serviceId", service.getId(),
-                    "carPrefix", service.getCar().getPrefix(),
-                    "departureTime", service.getDepartureTime(),
-                    "model", service.getCar().getType().getModel(),
-                    "licensePlate", service.getCar().getLicensePlate(),
-                    "departureKm", service.getDepartureKm(),
-                    "description", Optional.ofNullable(service.getDescription()).orElse("")
-            ));
+            var address = serviceAddressesRepository.findByServiceId(service.getId()).stream().findFirst().orElse(null);
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("active", true);
+            response.put("serviceId", service.getId());
+            response.put("carPrefix", service.getCar().getPrefix());
+            response.put("departureTime", service.getDepartureTime());
+            response.put("model", service.getCar().getType().getModel());
+            response.put("licensePlate", service.getCar().getLicensePlate());
+            response.put("departureKm", service.getDepartureKm());
+            response.put("description", Optional.ofNullable(service.getDescription()).orElse(""));
+            response.put("latitude", address != null ? address.getLatitude() : null);
+            response.put("longitude", address != null ? address.getLongitude() : null);
+            response.put("destinationRequester", service.getDestinationRequester() != null ? service.getDestinationRequester() : "");
+            return ResponseEntity.ok(response);
         }
         return ResponseEntity.ok(Map.of("active", false));
     }
@@ -98,5 +107,38 @@ public class ServiceController {
         String motivo = (String) payload.getOrDefault("description", "Cancelamento sem motivo informado");
         serviceService.cancelService(id, motivo);
         return ResponseEntity.ok(Map.of("message", "Serviço cancelado com sucesso"));
+    }
+
+    @PatchMapping("/update-details/{id}")
+    public ResponseEntity<?> updateServiceDetails(@PathVariable Long id, @RequestBody Map<String, Object> payload) {
+        var updated = serviceService.updateServiceDetails(id, payload);
+        return ResponseEntity.ok(Map.of("message", "Chamado atualizado com sucesso", "serviceId", updated.getId()));
+    }
+
+    @PatchMapping("/toggle-active/{id}")
+    public ResponseEntity<?> toggleActiveService(@PathVariable Long id) {
+        var service = serviceService.toggleServiceActive(id);
+        return ResponseEntity.ok(Map.of("message", "Status do chamado alterado com sucesso", "isActive", service.getIsActive()));
+    }
+
+    @PatchMapping("/refueling/update/{recordId}")
+    public ResponseEntity<?> updateRefueling(@PathVariable Long recordId, @RequestBody Map<String, Object> payload) {
+        var updated = serviceService.updateRefueling(recordId, payload);
+        return ResponseEntity.ok(Map.of("message", "Abastecimento atualizado com sucesso"));
+    }
+
+    @PatchMapping("/refueling/toggle-active/{recordId}")
+    public ResponseEntity<?> toggleActiveRefueling(@PathVariable Long recordId) {
+        var refueling = serviceService.toggleRefuelingActive(recordId);
+        return ResponseEntity.ok(Map.of("message", "Status do abastecimento alterado com sucesso", "isActive", refueling.getIsActive()));
+    }
+
+    @PostMapping("/{id}/event")
+    public ResponseEntity<?> registerEvent(@PathVariable Long id, @RequestBody Map<String, String> payload) {
+        String typeStr = payload.get("type");
+        String note = payload.getOrDefault("note", "");
+        RecordType type = RecordType.valueOf(typeStr);
+        serviceService.recordServiceEvent(id, type, note);
+        return ResponseEntity.ok(Map.of("message", "Evento registrado com sucesso"));
     }
 }

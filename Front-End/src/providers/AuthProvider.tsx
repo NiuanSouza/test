@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const token = getStoredToken();
-    const isPublic = publicRoutes.includes(pathname);
+    const isPublic = pathname ? publicRoutes.includes(pathname) : false;
 
     if (!token || isTokenExpired(token)) {
       clearStoredToken();

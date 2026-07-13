@@ -53,7 +53,7 @@ public class UserService {
     }
 
     public List<User> findAllByPermission(Permission permission) {
-        return repository.findByPermissionAndIsActiveTrue(permission);
+        return repository.findByPermission(permission);
     }
 
     // SOMENTE TÉCNICOS COM STATUS ACTIVE

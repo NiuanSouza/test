@@ -1,0 +1,469 @@
+/* =========================================================================
+   SIVA - SHARED GESTÃO CSS
+   Design unificado para as telas de Relatórios, Veículos e Usuários
+   ========================================================================= */
+
+/* Hero Banner (Dashboard Topo) */
+.dashboard-gestor-hero {
+  background: linear-gradient(135deg, var(--color-primary) 0%, #1a365d 100%);
+  color: white;
+  padding: 32px;
+  border-radius: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dashboard-gestor-hero::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  right: -10%;
+  width: 400px;
+  height: 400px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.dashboard-gestor-hero h1,
+.dashboard-gestor-hero h2 {
+  color: white;
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.dashboard-gestor-hero p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0;
+}
+
+/* KPI Grid no Hero Banner */
+.kpi-grid-unified {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 16px;
+  margin-top: 24px;
+}
+
+.kpi-card-unified {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: white;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.kpi-card-unified:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.kpi-card-unified span {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 500;
+}
+
+.kpi-card-unified strong {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: white;
+}
+
+.kpi-card-unified small {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Main Panel (Panel Branco) */
+.gestao-panel {
+  background: #ffffff;
+  border-radius: 20px;
+  box-shadow: 0 0 14px rgba(0, 0, 0, 0.05);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gestao-panel-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.gestao-panel-topo h2 {
+  font-size: 1.4rem;
+  color: var(--color-primary);
+  margin: 0;
+  font-weight: 600;
+}
+
+.gestao-panel-actions {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* Filter Bar & Search */
+.gestao-filters {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 16px;
+  background: #f8fafc;
+  padding: 12px 16px;
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.gestao-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.gestao-tab {
+  padding: 8px 16px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-weight: 500;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.gestao-tab:hover {
+  background: rgba(0, 0, 0, 0.05);
+  color: var(--color-primary);
+}
+
+.gestao-tab.active {
+  background: var(--color-primary);
+  color: white;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.gestao-search {
+  display: flex;
+  align-items: center;
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  width: 300px;
+  max-width: 100%;
+}
+
+.gestao-search svg {
+  color: var(--color-text-tertiary);
+  margin-right: 8px;
+}
+
+.gestao-search input {
+  flex: 1;
+  border: none;
+  padding: 10px 0;
+  outline: none;
+  font-size: 0.95rem;
+  color: var(--color-text-primary);
+}
+
+/* Table Design */
+.gestao-table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  background: white;
+}
+
+.gestao-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  min-width: 800px;
+}
+
+.gestao-table th {
+  background: #f4f6fb;
+  color: var(--color-text-secondary);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid var(--color-border);
+}
+
+.gestao-table td {
+  padding: 16px;
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text-primary);
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.gestao-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+.gestao-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.gestao-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Actions in Table */
+.td-acoes {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-icon:hover {
+  background: var(--color-primary);
+  color: white;
+}
+
+.btn-icon.delete:hover {
+  background: var(--color-danger);
+}
+
+.btn-icon.history:hover {
+  background: #f59e0b;
+}
+
+/* Modals Overlay (Glassmorphism) */
+.gestao-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.gestao-modal-overlay.aberto {
+  opacity: 1;
+  visibility: visible;
+}
+
+.gestao-modal-content {
+  background: white;
+  width: 90%;
+  max-width: 500px;
+  border-radius: 20px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  transform: translateY(20px) scale(0.95);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.gestao-modal-overlay.aberto .gestao-modal-content {
+  transform: translateY(0) scale(1);
+}
+
+.gestao-modal-content.large {
+  max-width: 800px;
+}
+
+.gestao-modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.gestao-modal-header h3 {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 1.25rem;
+}
+
+.gestao-modal-close {
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.gestao-modal-close:hover {
+  color: var(--color-danger);
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.gestao-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  max-height: 70vh;
+}
+
+.gestao-modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  background: #f8fafc;
+  border-radius: 0 0 20px 20px;
+}
+
+/* History Audit UI */
+.history-timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+}
+
+.history-timeline::before {
+  content: "";
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 20px;
+  width: 2px;
+  background: var(--color-border);
+}
+
+.history-item {
+  display: flex;
+  gap: 16px;
+  position: relative;
+  z-index: 1;
+}
+
+.history-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid var(--color-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.history-icon.ADD { border-color: var(--color-success); color: var(--color-success); }
+.history-icon.MOD { border-color: var(--color-warning); color: var(--color-warning); }
+.history-icon.DEL { border-color: var(--color-danger); color: var(--color-danger); }
+
+.history-content {
+  background: #f8fafc;
+  border: 1px solid var(--color-border);
+  border-radius: 12px;
+  padding: 16px;
+  flex: 1;
+}
+
+.history-content header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.history-content header strong {
+  color: var(--color-text-primary);
+}
+
+.history-content header time {
+  color: var(--color-text-tertiary);
+  font-size: 0.85rem;
+}
+
+.history-changes {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .dashboard-gestor-hero {
+    padding: 24px;
+  }
+  .gestao-panel-topo {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .gestao-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .gestao-search {
+    width: 100%;
+  }
+}
+
+/* Badge - Módulo / Entidade */
+.badge-campo {
+  display: inline-flex;
+  align-items: center;
+  background: #eff6ff;
+  color: var(--color-primary);
+  border: 1px solid rgba(37, 99, 235, 0.25);
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* Audit history icon colors */
+.history-icon.ADD { background: rgba(22, 163, 74, 0.1); color: #16a34a; }
+.history-icon.MOD { background: rgba(234, 179, 8, 0.1);  color: #ca8a04; }
+.history-icon.DEL { background: rgba(220, 38, 38, 0.1);  color: #dc2626; }
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}

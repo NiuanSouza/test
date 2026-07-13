@@ -12,24 +12,16 @@ public interface RefuelingRepository extends JpaRepository<Refueling, Long> {
     @Query("SELECT a FROM Refueling a JOIN a.record r WHERE r.service.car.prefix = :prefix AND a.isActive = true AND r.isActive = true ORDER BY r.recordDate DESC")
     List<Refueling> findLatestRefuelingsByCar(@Param("prefix") String prefix);
 
-    @Query("SELECT COALESCE(SUM(r.totalAmount), 0.0) FROM Refueling r JOIN r.record rec WHERE MONTH(rec.recordDate) = MONTH(CURRENT_DATE) AND YEAR(rec.recordDate) = YEAR(CURRENT_DATE) AND r.isActive = true")
-    Double sumMonthlyFuelSpend();
+    @Query("SELECT COALESCE(SUM(r.totalAmount), 0.0) FROM Refueling r JOIN r.record rec WHERE rec.recordDate BETWEEN :start AND :end AND r.isActive = true")
+    Double sumMonthlyFuelSpend(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
 
-    @Query("SELECT COALESCE(SUM(r.liters), 0.0) FROM Refueling r JOIN r.record rec WHERE MONTH(rec.recordDate) = MONTH(CURRENT_DATE) AND YEAR(rec.recordDate) = YEAR(CURRENT_DATE) AND r.isActive = true")
-    Double sumMonthlyLiters();
+    @Query("SELECT COALESCE(SUM(r.liters), 0.0) FROM Refueling r JOIN r.record rec WHERE rec.recordDate BETWEEN :start AND :end AND r.isActive = true")
+    Double sumMonthlyLiters(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
 
-    @Query("SELECT COALESCE(AVG(r.pricePerLiter), 0.0) FROM Refueling r JOIN r.record rec WHERE MONTH(rec.recordDate) = MONTH(CURRENT_DATE) AND YEAR(rec.recordDate) = YEAR(CURRENT_DATE) AND r.isActive = true")
-    Double avgMonthlyPricePerLiter();
+    @Query("SELECT COALESCE(AVG(r.pricePerLiter), 0.0) FROM Refueling r JOIN r.record rec WHERE rec.recordDate BETWEEN :start AND :end AND r.isActive = true")
+    Double avgMonthlyPricePerLiter(@Param("start") java.time.LocalDateTime start, @Param("end") java.time.LocalDateTime end);
 
-    @Query("""
-    SELECT r
-    FROM Refueling r
-    JOIN r.record rec
-    WHERE rec.service.id = :serviceId
-      AND r.isActive = true
-      AND rec.isActive = true
-    ORDER BY rec.recordDate DESC
-""")
+    @Query("SELECT r FROM Refueling r JOIN r.record rec WHERE rec.service.id = :serviceId AND r.isActive = true AND rec.isActive = true ORDER BY rec.recordDate DESC")
     List<Refueling> findByServiceId(@Param("serviceId") Long serviceId);
 
     @Query("SELECT r FROM Refueling r JOIN r.record rec WHERE rec.recordDate BETWEEN :start AND :end AND r.isActive = true AND rec.isActive = true ORDER BY rec.recordDate DESC")

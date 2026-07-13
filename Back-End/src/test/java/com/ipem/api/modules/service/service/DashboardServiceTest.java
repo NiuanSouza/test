@@ -43,9 +43,9 @@ class DashboardServiceTest {
     @Test
     void shouldReturnCorrectMetrics() {
         // Arrange
-        when(refuelingRepository.sumMonthlyFuelSpend()).thenReturn(1500.0);
-        when(refuelingRepository.avgMonthlyPricePerLiter()).thenReturn(5.5);
-        when(refuelingRepository.sumMonthlyLiters()).thenReturn(272.72);
+        when(refuelingRepository.sumMonthlyFuelSpend(org.mockito.Mockito.any(java.time.LocalDateTime.class), org.mockito.Mockito.any(java.time.LocalDateTime.class))).thenReturn(1500.0);
+        when(refuelingRepository.avgMonthlyPricePerLiter(org.mockito.Mockito.any(java.time.LocalDateTime.class), org.mockito.Mockito.any(java.time.LocalDateTime.class))).thenReturn(5.5);
+        when(refuelingRepository.sumMonthlyLiters(org.mockito.Mockito.any(java.time.LocalDateTime.class), org.mockito.Mockito.any(java.time.LocalDateTime.class))).thenReturn(272.72);
 
         when(carRepository.countByStatus(VehicleStatus.AVAILABLE)).thenReturn(10L);
         when(carRepository.countByStatus(VehicleStatus.MAINTENANCE)).thenReturn(2L);

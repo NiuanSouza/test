@@ -20,6 +20,7 @@ public interface UserRepository extends JpaRepository<User, String> {
     boolean existsByEmailAndIsActiveTrue(String email);
 
     List<User> findByPermissionAndIsActiveTrue(Permission permission);
+    List<User> findByPermission(Permission permission);
 
     // FILTRO SOMENTE TÉCNICOS ATIVOS
     List<User> findByPermissionAndEmployeeStatusAndIsActiveTrue(

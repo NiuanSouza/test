@@ -13,11 +13,11 @@
 }
 
 .modal {
-  background-color: var(--color-white);
-  border-radius: var(--radius-md);
+  background-color: var(--color-bg-surface);
+  border-radius: var(--border-radius-xl);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   width: 90%;
-  max-width: 500px;
+  max-width: 700px;
   max-height: 90vh;
   display: flex;
   flex-direction: column;

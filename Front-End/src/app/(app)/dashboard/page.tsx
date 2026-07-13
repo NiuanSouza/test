@@ -1,159 +1,320 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { KpiCard } from "../../../components/KpiCard";
-import { Card, CardHeader, CardTitle, CardContent } from "../../../components/Card";
-import { DataTable } from "../../../components/DataTable";
+import { useRouter } from "next/navigation";
 import { apiClient } from "../../../services/api";
-import { DashboardMetrics, RecentService } from "../../../types/dashboard";
-import { useToast } from "../../../providers/ToastProvider";
-import { Car, Users, Wrench, CheckCircle, Droplet, Fuel } from "lucide-react";
-import styles from "./Dashboard.module.css";
-import Link from "next/link";
+import "./dashboard-gestor.css";
+
+// ===================================================================
+// TYPES
+// ===================================================================
+
+interface DashboardMetrics {
+  availableCars: number;
+  maintenanceCars: number;
+  inUseCars: number;
+  availableTechnicians: number;
+  onDutyTechnicians: number;
+  monthlyFuelSpend: number;
+  averagePricePerLiter: number;
+  totalLitersRefueled: number;
+}
+
+interface HistoryRevision {
+  entity: {
+    id: number;
+    departureTime: string | null;
+    completionTime: string | null;
+    description: string | null;
+    destinationRequester: string | null;
+    car?: { prefix: string };
+    user?: { name: string; registration: string };
+    priority?: string;
+  };
+  revisionType: string;
+  revisionDate: string;
+}
+
+// ===================================================================
+// HELPERS
+// ===================================================================
+
+function formatarMoeda(valor: number): string {
+  return `R$ ${valor.toLocaleString("pt-BR", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  })}`;
+}
+
+function formatarNumero(valor: number): string {
+  return valor.toLocaleString("pt-BR");
+}
+
+// ===================================================================
+// PAGE COMPONENT
+// ===================================================================
 
 export default function DashboardPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [recentServices, setRecentServices] = useState<RecentService[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const toast = useToast();
+  const [history, setHistory] = useState<HistoryRevision[]>([]);
+  const [resumoAtivos, setResumoAtivos] = useState(0);
+  const [resumoConcluidos, setResumoConcluidos] = useState(0);
 
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    async function loadDashboard() {
       try {
-        const [metricsData, recentServicesData] = await Promise.all([
+        const [metricsRes, historyRes] = await Promise.all([
           apiClient.get<DashboardMetrics>("/dashboard/metrics"),
-          apiClient.get<RecentService[]>("/service/recent")
+          apiClient.get<HistoryRevision[]>("/dashboard/history"),
         ]);
-        
-        setMetrics(metricsData);
-        setRecentServices(recentServicesData);
+
+        if (metricsRes) setMetrics(metricsRes);
+
+        if (historyRes && Array.isArray(historyRes)) {
+          // Remover revisões duplicadas do mesmo chamado (manter só a mais recente)
+          const uniqueHistory = [];
+          const seenIds = new Set();
+          for (const rev of historyRes) {
+            if (rev.entity && !seenIds.has(rev.entity.id)) {
+              seenIds.add(rev.entity.id);
+              uniqueHistory.push(rev);
+            }
+          }
+
+          setHistory(uniqueHistory.slice(0, 5));
+          setResumoAtivos(
+            historyRes.filter(
+              (rev) => rev.entity && rev.entity.completionTime === null
+            ).length
+          );
+          setResumoConcluidos(
+            historyRes.filter(
+              (rev) => rev.entity && rev.entity.completionTime !== null
+            ).length
+          );
+        }
       } catch (error) {
-        toast.error("Erro ao carregar os dados do dashboard.");
-        // Fallback mock data for development visually matching the original
-        setMetrics({
-          availableVehicles: 12,
-          inUseVehicles: 4,
-          maintenanceVehicles: 2,
-          availableTechnicians: 8,
-          activeTechnicians: 3,
-          monthlyFuelExpense: 2450.50,
-          averagePricePerLiter: 5.89,
-          totalLiters: 416
-        });
-        setRecentServices([
-          { id: 1, carPrefix: "V-01", technicianName: "João Silva", status: "Em Andamento", startTime: "08:30" },
-          { id: 2, carPrefix: "V-05", technicianName: "Maria Souza", status: "Concluído", startTime: "07:15", endTime: "11:45" }
-        ]);
+        console.error("Erro ao carregar dashboard:", error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    };
-
-    fetchDashboardData();
-  }, [toast]);
-
-  if (isLoading) {
-    return <div className={styles.loading}>Carregando painel de controle...</div>;
-  }
+    }
+    loadDashboard();
+  }, []);
 
   return (
-    <div className={styles.container}>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Painel de Controle</h1>
-        <p className={styles.subtitle}>Visão geral do sistema de frotas e chamados</p>
-      </div>
+    <>
+      {/* ========== DASHBOARD HERO ========== */}
+      <section className="dashboard-gestor-hero">
+        <div className="dashboard-topo">
+          <h2>Dashboard da frota e equipe</h2>
+          <p>
+            Painel inicial com os principais indicadores de viaturas, técnicos e
+            abastecimento.
+          </p>
+        </div>
 
-      <div className={styles.grid}>
-        <KpiCard 
-          title="Veículos Disponíveis" 
-          value={metrics?.availableVehicles || 0} 
-          icon={<Car size={32} />} 
-          className={styles.kpiBlue}
-        />
-        <KpiCard 
-          title="Veículos em Uso" 
-          value={metrics?.inUseVehicles || 0} 
-          icon={<Car size={32} />} 
-          className={styles.kpiOrange}
-        />
-        <KpiCard 
-          title="Veículos em Manutenção" 
-          value={metrics?.maintenanceVehicles || 0} 
-          icon={<Wrench size={32} />} 
-          className={styles.kpiRed}
-        />
-        <KpiCard 
-          title="Técnicos Disponíveis" 
-          value={metrics?.availableTechnicians || 0} 
-          icon={<Users size={32} />} 
-          className={styles.kpiGreen}
-        />
-      </div>
+        <div className="dashboard-grid">
+          <article className="dashboard-card destaque-disponivel">
+            <span className="dashboard-label">Viaturas disponíveis</span>
+            <strong className="dashboard-valor">
+              {loading ? "..." : metrics?.availableCars ?? 0}
+            </strong>
+            <span className="dashboard-info">
+              Prontas para atendimento imediato
+            </span>
+          </article>
 
-      <div className={styles.lowerGrid}>
-        <Card className={styles.chartCard}>
-          <CardHeader>
-            <CardTitle>Chamados Recentes</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <DataTable 
-              data={recentServices}
-              columns={[
-                { header: "Veículo", accessor: "carPrefix" },
-                { header: "Técnico", accessor: "technicianName" },
-                { header: "Início", accessor: "startTime" },
-                { 
-                  header: "Status", 
-                  accessor: (row) => (
-                    <span className={row.status === "Concluído" ? styles.statusBadgeSuccess : styles.statusBadgeWarning}>
-                      {row.status}
-                    </span>
-                  )
-                }
-              ]}
-              keyExtractor={(item) => item.id}
-            />
-            <div className={styles.viewAll}>
-              <Link href="/history">Ver todos os chamados</Link>
+          <article className="dashboard-card destaque-manutencao">
+            <span className="dashboard-label">Viaturas em manutenção</span>
+            <strong className="dashboard-valor">
+              {loading ? "..." : metrics?.maintenanceCars ?? 0}
+            </strong>
+            <span className="dashboard-info">
+              Em oficina ou revisão preventiva
+            </span>
+          </article>
+
+          <article className="dashboard-card destaque-uso">
+            <span className="dashboard-label">Viaturas em uso</span>
+            <strong className="dashboard-valor">
+              {loading ? "..." : metrics?.inUseCars ?? 0}
+            </strong>
+            <span className="dashboard-info">
+              Em rondas e operações ativas
+            </span>
+          </article>
+
+          <article className="dashboard-card destaque-tecnicos">
+            <span className="dashboard-label">Técnicos disponíveis</span>
+            <strong className="dashboard-valor">
+              {loading ? "..." : metrics?.availableTechnicians ?? 0}
+            </strong>
+            <span className="dashboard-info">Aguardando nova alocação</span>
+          </article>
+
+          <article className="dashboard-card destaque-servico">
+            <span className="dashboard-label">Técnicos em serviço</span>
+            <strong className="dashboard-valor">
+              {loading ? "..." : metrics?.onDutyTechnicians ?? 0}
+            </strong>
+            <span className="dashboard-info">
+              Atendendo chamados neste momento
+            </span>
+          </article>
+
+          <article className="dashboard-card destaque-combustivel">
+            <span className="dashboard-label">Gasto de combustível mensal</span>
+            <strong className="dashboard-valor">
+              {loading
+                ? "..."
+                : metrics?.monthlyFuelSpend !== undefined
+                ? formatarMoeda(metrics.monthlyFuelSpend)
+                : "R$ 0,00"}
+            </strong>
+            <span className="dashboard-info">
+              Total registrado no mês atual
+            </span>
+          </article>
+
+          <article className="dashboard-card destaque-preco">
+            <span className="dashboard-label">Preço médio por litro</span>
+            <strong className="dashboard-valor">
+              {loading
+                ? "..."
+                : metrics?.averagePricePerLiter !== undefined
+                ? formatarMoeda(metrics.averagePricePerLiter)
+                : "R$ 0,00"}
+            </strong>
+            <span className="dashboard-info">
+              Média consolidada dos abastecimentos
+            </span>
+          </article>
+
+          <article className="dashboard-card destaque-litros">
+            <span className="dashboard-label">Total de litros abastecidos</span>
+            <strong className="dashboard-valor">
+              {loading
+                ? "..."
+                : metrics?.totalLitersRefueled !== undefined
+                ? `${formatarNumero(metrics.totalLitersRefueled)} L`
+                : "0 L"}
+            </strong>
+            <span className="dashboard-info">Volume acumulado no mês</span>
+          </article>
+        </div>
+      </section>
+
+      {/* ========== HISTÓRICO RECENTE ========== */}
+      <section className="card-historico-gestor">
+        <div className="card-historico-topo">
+          <div>
+            <h2>Histórico de chamados</h2>
+            <p>
+              Últimos atendimentos com prioridade, status, responsável e prazo.
+            </p>
+          </div>
+
+          <div className="historico-resumo">
+            <article className="historico-resumo-card">
+              <span>Chamados ativos</span>
+              <strong>{loading ? "..." : resumoAtivos}</strong>
+            </article>
+            <article className="historico-resumo-card">
+              <span>Concluídos hoje</span>
+              <strong>{loading ? "..." : resumoConcluidos}</strong>
+            </article>
+            <article className="historico-resumo-card">
+              <span>Tempo médio</span>
+              <strong>...</strong>
+            </article>
+          </div>
+        </div>
+
+        <div className="lista-chamados-gestor-dash">
+          {loading ? (
+            <div className="nenhum-registro-dash">
+              Carregando histórico...
             </div>
-          </CardContent>
-        </Card>
-
-        <Card className={styles.fuelCard}>
-          <CardHeader>
-            <CardTitle>Resumo de Abastecimento (Mês)</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className={styles.fuelStats}>
-              <div className={styles.fuelStat}>
-                <div className={styles.fuelIcon}><Fuel size={24} /></div>
-                <div>
-                  <p className={styles.fuelLabel}>Gasto Total</p>
-                  <p className={styles.fuelValue}>
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics?.monthlyFuelExpense || 0)}
-                  </p>
-                </div>
-              </div>
-              <div className={styles.fuelStat}>
-                <div className={styles.fuelIcon}><Droplet size={24} /></div>
-                <div>
-                  <p className={styles.fuelLabel}>Total de Litros</p>
-                  <p className={styles.fuelValue}>{metrics?.totalLiters || 0} L</p>
-                </div>
-              </div>
-              <div className={styles.fuelStat}>
-                <div className={styles.fuelIcon}><CheckCircle size={24} /></div>
-                <div>
-                  <p className={styles.fuelLabel}>Preço Médio (L)</p>
-                  <p className={styles.fuelValue}>
-                    {new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(metrics?.averagePricePerLiter || 0)}
-                  </p>
-                </div>
-              </div>
+          ) : history.length === 0 ? (
+            <div className="nenhum-registro-dash">
+              Nenhum chamado registrado no histórico.
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          ) : (
+            history.map((rev, i) => {
+              if (!rev.entity) return null;
+
+              const isFinalizado = rev.entity.completionTime !== null;
+              const statusStr = isFinalizado ? "finalizado" : "andamento";
+              const statusLabelStr = isFinalizado
+                ? "Finalizado"
+                : "Em andamento";
+
+              const dataAbertura = new Date(
+                rev.revisionDate ||
+                  rev.entity.departureTime ||
+                  new Date().toISOString()
+              );
+              const horaStr = `${String(dataAbertura.getHours()).padStart(
+                2,
+                "0"
+              )}:${String(dataAbertura.getMinutes()).padStart(2, "0")}`;
+
+              const titulo =
+                rev.revisionType === "ADD"
+                  ? "Abertura de Chamado"
+                  : "Atualização de Chamado";
+              const prefixo = rev.entity.car?.prefix || "N/A";
+              const tecnico = rev.entity.user?.name || "N/A";
+              const destino =
+                rev.entity.destinationRequester || "Local não informado";
+
+              return (
+                <article
+                  key={i}
+                  className={`item-chamado-dash item-${statusStr}-dash`}
+                >
+                  <div className="item-chamado-principal">
+                    <div className="item-chamado-topo">
+                      <span className="chamado-numero">
+                        N° {rev.entity.id}
+                      </span>
+                      <span
+                        className={`status-chip-dash status-${statusStr}-dash`}
+                      >
+                        {statusLabelStr}
+                      </span>
+                    </div>
+                    <h3>{titulo}</h3>
+                    <div className="dados-veiculo">
+                      Viatura {prefixo} | Técnico: {tecnico}
+                    </div>
+                    <div className="meta-chamado-dash">
+                      <span>{destino}</span>
+                      <span>Horário: {horaStr}</span>
+                    </div>
+                  </div>
+                  <button
+                    className={`btn-status-dash status-${statusStr}-dash`}
+                    onClick={() => router.push("/history")}
+                  >
+                    Ver histórico
+                  </button>
+                </article>
+              );
+            })
+          )}
+        </div>
+
+        <button
+          className="btn-historico-completo"
+          onClick={() => router.push("/history")}
+        >
+          Visualizar histórico completo
+        </button>
+      </section>
+    </>
   );
 }

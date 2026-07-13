@@ -15,14 +15,16 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
+import org.hibernate.envers.Audited;
+
 @Entity
+@Audited
 @Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@SQLRestriction("is_active = true")
 public class User extends BaseEntity implements UserDetails {
 
     @Id
@@ -87,6 +89,7 @@ public class User extends BaseEntity implements UserDetails {
     public boolean isEnabled() { return true; }
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
+    @Builder.Default
     private Boolean isActive = true;
 
     private String driverLicenseCategory;

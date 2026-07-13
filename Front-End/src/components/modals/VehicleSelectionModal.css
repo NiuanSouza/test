@@ -1,0 +1,211 @@
+/* MODAL DE SELEÇÃO DE VEÍCULO (Estilo Unificado) */
+.modal-sobreposicao {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(2px);
+}
+
+.modal-popup-card {
+    background-color: #ffffff;
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    width: min(95%, 560px);
+    border: 1px solid #e2e8f0;
+}
+
+.modal-popup-titulo {
+    color: #12308f;
+    font-size: 24px;
+    margin-bottom: 18px;
+    font-weight: bold;
+    border-bottom: none;
+    margin-top: 0;
+}
+
+.modal-container-pesquisa {
+    display: flex;
+    gap: 12px;
+    margin-top: 15px;
+    margin-bottom: 12px;
+}
+
+.modal-container-pesquisa input {
+    flex: 1;
+    padding: 12px 16px;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    font-size: 15px;
+    outline: none;
+    transition: border 0.3s;
+}
+
+.modal-container-pesquisa input:focus { 
+    border-color: #12308f; 
+}
+
+.modal-btn-filtro-abrir {
+    width: 46px;
+    height: 46px;
+    background-color: white;
+    border: 1px solid #d7d7d7;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+.modal-btn-filtro-abrir:hover {
+    background-color: #f1f5f9;
+}
+
+.modal-lista-veiculos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 16px;
+    max-height: 320px;
+    overflow-y: auto;
+    border: none;
+    padding-right: 6px;
+    background-color: transparent;
+}
+
+.modal-lista-veiculos::-webkit-scrollbar {
+    width: 6px;
+}
+.modal-lista-veiculos::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.modal-veiculo-item-lista {
+    padding: 16px;
+    border-radius: 12px;
+    font-size: 14px;
+    cursor: pointer;
+    background-color: #ffffff;
+    color: #12308f;
+    border: 2px solid #12308f;
+    box-shadow: 0 4px 10px rgba(18, 48, 143, 0.05);
+    text-align: left;
+    transition: all 0.2s ease;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.modal-veiculo-item-lista strong {
+    font-size: 16px;
+    color: #12308f;
+    font-weight: 800;
+}
+
+.modal-veiculo-item-lista:hover {
+    background-color: #12308f;
+    color: #ffffff;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(18, 48, 143, 0.2);
+}
+
+.modal-veiculo-item-lista:hover strong {
+    color: #ffffff;
+}
+
+.modal-popup-filtro-menor { 
+    max-width: 400px !important; 
+}
+
+.modal-grupo-filtro { 
+    margin-bottom: 16px; 
+}
+
+.modal-grupo-filtro label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 6px;
+}
+
+.modal-grupo-filtro select {
+    width: 100%;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #d7d7d7;
+    background: #fff;
+    font-size: 15px;
+    outline: none;
+}
+.modal-grupo-filtro select:focus {
+    border-color: #12308f;
+}
+
+.modal-btn-container {
+    display: flex;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.modal-btn-voltar {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    flex: 1;
+    transition: background 0.2s;
+}
+.modal-btn-voltar:hover {
+    background-color: #e2e8f0;
+}
+
+.modal-btn-aceitar {
+    background: linear-gradient(135deg, #002080 0%, #0d36b1 100%);
+    color: white;
+    padding: 14px 16px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    flex: 1;
+    box-shadow: 0 4px 12px rgba(13, 54, 177, 0.2);
+    transition: all 0.2s;
+}
+.modal-btn-aceitar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(13, 54, 177, 0.3);
+}
+
+.modal-popup-detalhes-layout {
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-popup-conteudo {
+    color: #333;
+    font-size: 16px;
+    line-height: 1.6;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+
+.modal-popup-conteudo p {
+    margin: 0 0 8px 0;
+}
+.modal-popup-conteudo p:last-child {
+    margin: 0;
+}

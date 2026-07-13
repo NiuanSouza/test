@@ -4,11 +4,12 @@ import com.ipem.api.infrastructure.models.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "car_type")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor
-@SQLRestriction("is_active = true")
 public class CarType extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

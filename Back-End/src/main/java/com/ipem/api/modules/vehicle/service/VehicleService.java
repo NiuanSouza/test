@@ -10,6 +10,7 @@ import com.ipem.api.modules.vehicle.model.Car;
 import com.ipem.api.modules.vehicle.model.CarType;
 import com.ipem.api.modules.vehicle.repository.CarRepository;
 import com.ipem.api.modules.vehicle.repository.CarTypeRepository;
+import com.ipem.api.modules.vehicle.model.enums.VehicleStatus;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -113,6 +114,14 @@ public class VehicleService {
 
     public List<CarType> findAllActiveTypes() {
         try {
+            return carTypeRepository.findByIsActiveTrue();
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao buscar tipos ativos de veículos: " + e.getMessage());
+        }
+    }
+
+    public List<CarType> findAllTypes() {
+        try {
             return carTypeRepository.findAll();
         } catch (Exception e) {
             throw new RuntimeException("Erro ao buscar tipos de veículos: " + e.getMessage());
@@ -124,6 +133,119 @@ public class VehicleService {
             return carRepository.findAll();
         } catch (Exception e) {
             throw new RuntimeException("Erro ao buscar veículos: " + e.getMessage());
+        }
+    }
+
+    @Transactional
+    public Car updateCarFields(String prefix, Map<String, Object> updates) {
+        Car car = carRepository.findById(prefix)
+                .orElseThrow(() -> new RuntimeException("Veículo não encontrado com o prefixo: " + prefix));
+
+        updates.forEach((key, value) -> {
+            if (value == null) return;
+            switch (key) {
+                case "licensePlate":
+                    car.setLicensePlate((String) value);
+                    break;
+                case "color":
+                    car.setColor((String) value);
+                    break;
+                case "observations":
+                    car.setObservations((String) value);
+                    break;
+                case "fuel":
+                    car.setFuel((String) value);
+                    break;
+                case "tankCapacity":
+                    car.setTankCapacity(Float.valueOf(value.toString()));
+                    break;
+                case "renavam":
+                    car.setRenavam((String) value);
+                    break;
+                case "chassi":
+                    car.setChassi((String) value);
+                    break;
+                case "requiredLicense":
+                    car.setRequiredLicense((String) value);
+                    break;
+                case "isActive":
+                    boolean isActive = (Boolean) value;
+                    if (!isActive && car.getVehicleStatus() == VehicleStatus.IN_USE) {
+                        throw new RuntimeException("Não é possível inativar um veículo em uso.");
+                    }
+                    car.setIsActive(isActive);
+                    break;
+                case "type":
+                    Map<String, Object> typeUpdates = (Map<String, Object>) value;
+                    CarType type = car.getType();
+                    if (type != null) {
+                        if (typeUpdates.containsKey("brand")) type.setBrand((String) typeUpdates.get("brand"));
+                        if (typeUpdates.containsKey("model")) type.setModel((String) typeUpdates.get("model"));
+                        if (typeUpdates.containsKey("year")) type.setYear(Integer.valueOf(typeUpdates.get("year").toString()));
+                        if (typeUpdates.containsKey("category")) type.setCategory((String) typeUpdates.get("category"));
+                        carTypeRepository.save(type);
+                    }
+                    break;
+            }
+        });
+
+        return carRepository.save(car);
+    }
+
+    @Transactional
+    public CarType createCarType(CarType type) {
+        type.setIsActive(true);
+        return carTypeRepository.save(type);
+    }
+
+    @Transactional
+    public CarType updateCarType(Integer id, Map<String, Object> updates) {
+        CarType type = carTypeRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tipo de veículo não encontrado com ID: " + id));
+
+        updates.forEach((key, value) -> {
+            if (value == null) return;
+            switch (key) {
+                case "brand":
+                    type.setBrand((String) value);
+                    break;
+                case "model":
+                    type.setModel((String) value);
+                    break;
+                case "year":
+                    type.setYear(Integer.valueOf(value.toString()));
+                    break;
+                case "category":
+                    type.setCategory((String) value);
+                    break;
+                case "isActive":
+                    type.setIsActive((Boolean) value);
+                    break;
+            }
+        });
+
+        return carTypeRepository.save(type);
+    }
+
+    public List<Car> getActiveCarsByType(Integer typeId) {
+        return carRepository.findByTypeIdAndIsActiveTrue(typeId);
+    }
+
+    @Transactional
+    public void inactivateTypeAndCars(Integer typeId) {
+        CarType type = carTypeRepository.findById(typeId)
+                .orElseThrow(() -> new RuntimeException("Tipo de veículo não encontrado"));
+        
+        type.setIsActive(false);
+        carTypeRepository.save(type);
+
+        List<Car> cars = carRepository.findByTypeIdAndIsActiveTrue(typeId);
+        for (Car car : cars) {
+            if (car.getVehicleStatus() == VehicleStatus.IN_USE) {
+                throw new RuntimeException("Não é possível inativar o tipo. O veículo " + car.getLicensePlate() + " está em uso.");
+            }
+            car.setIsActive(false);
+            carRepository.save(car);
         }
     }
 }

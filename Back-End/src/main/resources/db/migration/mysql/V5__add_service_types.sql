@@ -1,0 +1,2 @@
+ALTER TABLE service ADD COLUMN service_type VARCHAR(100);
+ALTER TABLE service ADD COLUMN cnh_type VARCHAR(20);

@@ -2,31 +2,34 @@ import React from "react";
 import styles from "./Card.module.css";
 import clsx from "clsx";
 
-interface CardProps {
-  children: React.ReactNode;
-  className?: string;
-  onClick?: () => void;
-}
-
-export function Card({ children, className, onClick }: CardProps) {
+export function Card({ children, className, ...props }: { children: React.ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div 
-      className={clsx(styles.card, className, onClick && styles.clickable)} 
-      onClick={onClick}
-    >
+    <div className={clsx(styles.card, className)} {...props}>
       {children}
     </div>
   );
 }
 
-export function CardHeader({ children, className }: { children: React.ReactNode, className?: string }) {
-  return <div className={clsx(styles.header, className)}>{children}</div>;
+export function CardHeader({ children, className, ...props }: { children: React.ReactNode; className?: string } & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={clsx(styles.header, className)} {...props}>
+      {children}
+    </div>
+  );
 }
 
-export function CardTitle({ children }: { children: React.ReactNode }) {
-  return <h3 className={styles.title}>{children}</h3>;
+export function CardTitle({ children, className, ...props }: { children: React.ReactNode; className?: string } & React.HTMLAttributes<HTMLHeadingElement>) {
+  return (
+    <h3 className={clsx(styles.title, className)} {...props}>
+      {children}
+    </h3>
+  );
 }
 
-export function CardContent({ children, className }: { children: React.ReactNode, className?: string }) {
-  return <div className={clsx(styles.content, className)}>{children}</div>;
+export function CardContent({ children, className, ...props }: { children: React.ReactNode, className?: string } & React.HTMLAttributes<HTMLDivElement>) {
+  return (
+    <div className={clsx(styles.content, className)} {...props}>
+      {children}
+    </div>
+  );
 }

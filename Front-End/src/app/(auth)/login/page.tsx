@@ -1,95 +1,175 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Input } from "../../../components/Input";
-import { Button } from "../../../components/Button";
 import { apiClient } from "../../../services/api";
-import { LoginRequest, LoginResponse } from "../../../types/auth";
 import { TOKEN_KEY } from "../../../lib/constants";
+import { LoginRequest, LoginResponse } from "../../../types/auth";
 import { useToast } from "../../../providers/ToastProvider";
-import styles from "./Login.module.css";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 
 export default function LoginPage() {
   const [registration, setRegistration] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [recoveryEmail, setRecoveryEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+  
   const router = useRouter();
-  const toast = useToast();
+  const { showToast } = useToast();
 
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleLogin = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    
     if (!registration || !password) {
-      toast.error("Por favor, preencha todos os campos.");
+      showToast("Por favor, preencha todos os campos.", "error");
       return;
     }
 
-    setIsLoading(true);
+    setLoading(true);
     try {
       const payload: LoginRequest = { registration, password };
+      // O endpoint original era /user/login, vamos manter conforme o legacy auth.js.
       const data = await apiClient.post<LoginResponse>("/user/login", payload, { requireAuth: false });
-      
+
       localStorage.setItem(TOKEN_KEY, data.token);
       localStorage.setItem("userName", data.name);
       localStorage.setItem("userRegistration", data.registration);
       localStorage.setItem("userPermission", data.permission);
-      
-      if (data.permission === "MANAGER" || data.permission === "ADMIN") {
+
+      if (data.permission === "MANAGER" || data.permission === "ADMINISTRATOR" || data.permission === "ADMIN") {
         router.push("/dashboard");
       } else {
         router.push("/home");
       }
     } catch (error: any) {
-      toast.error(error.message || "Matrícula ou senha incorretos.");
+      showToast(error.message || "Matrícula ou senha incorretos.", "error");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
+    }
+  };
+
+  const handleRecovery = async () => {
+    if (!recoveryEmail) {
+      showToast("Informe um e-mail válido!", "error");
+      return;
+    }
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(recoveryEmail)) {
+        showToast("Insira um e-mail válido", "error");
+        return;
+    }
+
+    try {
+      await apiClient.post("/user/reset-password", { email: recoveryEmail }, { requireAuth: false });
+      showToast("E-mail enviado com sucesso! Verifique sua caixa de entrada.", "success");
+      setShowModal(false);
+    } catch (error: any) {
+      showToast(error.message || "Erro ao recuperar senha", "error");
     }
   };
 
   return (
-    <div className={styles.loginForm}>
-      <div className={styles.logoContainer}>
-        <Image 
-          src="/images/logosiva.png" 
-          alt="SIVA Logo" 
-          width={120} 
-          height={120} 
-          className={styles.logo}
-          style={{ width: "auto", height: "auto" }}
-          priority
-        />
-      </div>
-      
-      <h1 className={styles.title}>Bem-vindo</h1>
-      <p className={styles.subtitle}>Faça login para continuar</p>
-
-      <form onSubmit={handleLogin} className={styles.form}>
-        <Input 
-          label="Matrícula" 
-          value={registration} 
-          onChange={(e) => setRegistration(e.target.value)} 
-          required 
-        />
-        
-        <Input 
-          label="Senha" 
-          type="password"
-          value={password} 
-          onChange={(e) => setPassword(e.target.value)} 
-          required 
-          showToggle
-        />
-        
-        <div className={styles.forgotPassword}>
-          <Link href="/reset-password">Esqueceu sua senha?</Link>
+    <div className="auth-wrapper">
+      <div className="auth-card">
+        <div className="auth-logo-container">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/img/logosiva.png" alt="Logo SIVA" className="auth-logo" />
         </div>
 
-        <Button type="submit" variant="primary" isLoading={isLoading} className={styles.submitBtn}>
-          ENTRAR
-        </Button>
-      </form>
+        <form onSubmit={handleLogin}>
+          <div className="auth-form-group">
+            <input
+              type="text"
+              id="matricula"
+              className="auth-input"
+              required
+              value={registration}
+              onChange={(e) => setRegistration(e.target.value)}
+              placeholder=" "
+            />
+            <label htmlFor="matricula" className="auth-label">Matrícula</label>
+          </div>
+
+          <div className="auth-form-group">
+            <input
+              type={showPassword ? "text" : "password"}
+              id="senha"
+              className="auth-input"
+              required
+              autoComplete="current-password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder=" "
+            />
+            <label htmlFor="senha" className="auth-label">Senha</label>
+            <div 
+              className="auth-input-icon" 
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+            </div>
+          </div>
+
+          <div className="auth-links">
+            <span className="auth-link" onClick={() => setShowModal(true)}>
+              Esqueceu a senha?
+            </span>
+          </div>
+
+          <button type="submit" className="btn-primary" disabled={loading}>
+            {loading ? <Loader2 size={20} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} /> : "Entrar"}
+          </button>
+        </form>
+      </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={(e) => {
+          if (e.target === e.currentTarget) setShowModal(false);
+        }}>
+          <div className="modal-content">
+            <h2 className="modal-title">Recuperar Senha</h2>
+            <div className="modal-body">
+              Informe seu e-mail vinculado para receber o link de recuperação de senha.
+              
+              <div className="auth-form-group" style={{ marginTop: "24px", marginBottom: 0 }}>
+                <input
+                  type="email"
+                  id="email-recuperacao"
+                  className="auth-input"
+                  required
+                  value={recoveryEmail}
+                  onChange={(e) => setRecoveryEmail(e.target.value)}
+                  placeholder=" "
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleRecovery();
+                    }
+                  }}
+                />
+                <label htmlFor="email-recuperacao" className="auth-label">E-mail</label>
+              </div>
+            </div>
+            <div className="modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setShowModal(false)}>
+                Cancelar
+              </button>
+              <button type="button" className="btn-action" onClick={handleRecovery} style={{ padding: "10px 24px", fontSize: "0.875rem" }}>
+                Enviar link
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

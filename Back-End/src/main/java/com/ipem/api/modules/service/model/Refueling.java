@@ -6,7 +6,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
+
 @Entity
+@Audited
 @Table(name = "refuelings")
 @Getter
 @Setter
@@ -23,6 +27,7 @@ public class Refueling extends BaseEntity {
     @OneToOne
     @MapsId
     @JoinColumn(name = "record_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
     private Record record;
 
     private Float liters;
@@ -37,6 +42,7 @@ public class Refueling extends BaseEntity {
     private String invoice;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
+    @Builder.Default
     private Boolean isActive = true;
 
     @Enumerated(EnumType.STRING)

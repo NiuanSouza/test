@@ -18,4 +18,6 @@ public interface CarRepository extends JpaRepository<Car, String> {
     Long countByStatus(@Param("status") VehicleStatus status);
 
     Car findByLicensePlateAndIsActiveTrue(String licensePlate);
+
+    List<Car> findByTypeIdAndIsActiveTrue(Integer typeId);
 }

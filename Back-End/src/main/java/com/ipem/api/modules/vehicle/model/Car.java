@@ -5,11 +5,13 @@ import com.ipem.api.modules.vehicle.model.enums.VehicleStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.SQLRestriction;
+import org.hibernate.envers.Audited;
+import org.hibernate.envers.RelationTargetAuditMode;
 
 @Entity
+@Audited
 @Table(name = "cars")
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
-@SQLRestriction("is_active = true")
 public class Car extends BaseEntity {
     @Id
     @Column(length = 20)
@@ -18,6 +20,8 @@ public class Car extends BaseEntity {
 
     @ManyToOne
     @JoinColumn(name = "type_id")
+    @Audited(targetAuditMode = RelationTargetAuditMode.NOT_AUDITED)
+    @org.hibernate.annotations.NotFound(action = org.hibernate.annotations.NotFoundAction.IGNORE)
     private CarType type;
 
     private String fuel;
@@ -40,6 +44,7 @@ public class Car extends BaseEntity {
     private VehicleStatus vehicleStatus;
 
     @Column(name = "is_active", columnDefinition = "boolean default true")
+    @Builder.Default
     private Boolean isActive = true;
 
     private Float tankCapacity;

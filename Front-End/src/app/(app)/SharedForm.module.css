@@ -45,7 +45,13 @@
 .formGrid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  row-gap: 28px;
+  column-gap: 20px;
+  padding-top: 12px;
+}
+
+.formGrid > div {
+  margin-bottom: 0;
 }
 
 .formActions {

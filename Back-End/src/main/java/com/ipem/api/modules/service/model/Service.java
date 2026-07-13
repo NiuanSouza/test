@@ -44,6 +44,12 @@ public class Service extends BaseEntity {
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @Column(name = "service_type")
+    private String serviceType;
+
+    @Column(name = "cnh_type")
+    private String cnhType;
+
     @Column(name = "is_active", columnDefinition = "boolean default true")
     private Boolean isActive = true;
 

@@ -62,9 +62,12 @@ public class DashboardService {
      * Consolida os KPIs principais para os cards do Dashboard.
      */
     public DashboardMetricsDTO getMetrics() {
-        Double spend = refuelingRepository.sumMonthlyFuelSpend();
-        Double avgPrice = refuelingRepository.avgMonthlyPricePerLiter();
-        Double liters = refuelingRepository.sumMonthlyLiters();
+        java.time.LocalDateTime monthStart = java.time.YearMonth.now().atDay(1).atStartOfDay();
+        java.time.LocalDateTime monthEnd   = java.time.YearMonth.now().atEndOfMonth().atTime(23, 59, 59);
+
+        Double spend = refuelingRepository.sumMonthlyFuelSpend(monthStart, monthEnd);
+        Double avgPrice = refuelingRepository.avgMonthlyPricePerLiter(monthStart, monthEnd);
+        Double liters = refuelingRepository.sumMonthlyLiters(monthStart, monthEnd);
 
         return new DashboardMetricsDTO(
                 Optional.ofNullable(carRepository.countByStatus(VehicleStatus.AVAILABLE)).orElse(0L),
@@ -107,8 +110,20 @@ public class DashboardService {
             entityData.put("completionTime", entity.getCompletionTime());
             entityData.put("description", entity.getDescription());
 
-            if (entity.getCar() != null) entityData.put("car", Map.of("prefix", entity.getCar().getPrefix()));
-            if (entity.getUser() != null) entityData.put("user", Map.of("name", entity.getUser().getName(), "registration", entity.getUser().getRegistration()));
+            if (entity.getCar() != null) {
+                try {
+                    entityData.put("car", Map.of("prefix", entity.getCar().getPrefix()));
+                } catch (jakarta.persistence.EntityNotFoundException | org.hibernate.ObjectNotFoundException e) {
+                    entityData.put("car", Map.of("prefix", "Removido"));
+                }
+            }
+            if (entity.getUser() != null) {
+                try {
+                    entityData.put("user", Map.of("name", entity.getUser().getName(), "registration", entity.getUser().getRegistration()));
+                } catch (jakarta.persistence.EntityNotFoundException | org.hibernate.ObjectNotFoundException e) {
+                    entityData.put("user", Map.of("name", "Removido", "registration", "Removido"));
+                }
+            }
 
             dto.put("entity", entityData);
             dto.put("revisionType", revisionType.name());
@@ -190,10 +205,14 @@ public class DashboardService {
                 
                 String labelStr = "Incidente relatado";
                 if (incident.getIncidentType() != null) {
-                    labelStr = switch (incident.getIncidentType()) {
-                        case CANCELLATION -> "Cancelamento registrado";
-                        case DEFECT -> "Falha mecânica / Defeito";
-                    };
+                    switch (incident.getIncidentType()) {
+                        case CANCELLATION:
+                            labelStr = "Cancelamento registrado";
+                            break;
+                        case DEFECT:
+                            labelStr = "Falha mecânica / Defeito";
+                            break;
+                    }
                 }
                 evento.put("label", labelStr);
                 
@@ -282,15 +301,16 @@ public class DashboardService {
      */
     private String traduzirTipoRecord(com.ipem.api.modules.service.model.enums.RecordType tipo) {
         if (tipo == null) return "Evento desconhecido";
-        return switch (tipo) {
-            case CHECK_OUT           -> "Saída registrada";
-            case CHECK_IN            -> "Retorno confirmado";
-            case REFUELING           -> "Abastecimento";
-            case INCIDENT            -> "Incidente";
-            case ARRIVAL_AT_LOCATION -> "Chegada no local";
-            case SERVICE_COMPLETION  -> "Serviço concluído";
-            case RETURN_TRIP         -> "Viagem de retorno";
-        };
+        switch (tipo) {
+            case CHECK_OUT:           return "Saída registrada";
+            case CHECK_IN:            return "Retorno confirmado";
+            case REFUELING:           return "Abastecimento";
+            case INCIDENT:            return "Incidente";
+            case ARRIVAL_AT_LOCATION: return "Chegada no local";
+            case SERVICE_COMPLETION:  return "Serviço concluído";
+            case RETURN_TRIP:         return "Viagem de retorno";
+            default:                  return "Evento desconhecido";
+        }
     }
 
     /**
@@ -306,7 +326,7 @@ public class DashboardService {
             var start = yearMonth.atDay(1).atStartOfDay();
             var end = yearMonth.atEndOfMonth().plusDays(1).atStartOfDay();
 
-            var services = serviceRepository.findAllHistoricalByDepartureTime(start, end);
+            List<com.ipem.api.modules.service.model.Service> services = serviceRepository.findAllHistoricalByDepartureTime(start, end);
 
             int completedCalls = 0;
             int openCalls = 0;
@@ -383,7 +403,7 @@ public class DashboardService {
 
     public List<com.ipem.api.modules.service.dto.ServiceReportEntryDTO> getServiceReportsByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
         var formatter = java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-        var services = serviceRepository.findAllHistoricalByDepartureTime(start, end);
+        List<com.ipem.api.modules.service.model.Service> services = serviceRepository.findAllHistoricalByDepartureTime(start, end);
         var entries = new java.util.ArrayList<com.ipem.api.modules.service.dto.ServiceReportEntryDTO>();
 
         for (var s : services) {
@@ -434,65 +454,87 @@ public class DashboardService {
     }
 
     public List<com.ipem.api.modules.service.dto.RefuelingReportDTO> getRefuelingReportsByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        List<Refueling> refuelings = refuelingRepository.findByRecordDateBetweenAndIsActiveTrue(start, end);
-        
-        return refuelings.stream().map(refueling -> {
-            String carPrefix = refueling.getRecord() != null && refueling.getRecord().getService() != null && refueling.getRecord().getService().getCar() != null 
-                    ? refueling.getRecord().getService().getCar().getPrefix() : "-";
-            String technicianName = refueling.getRecord() != null && refueling.getRecord().getService() != null && refueling.getRecord().getService().getUser() != null 
-                    ? refueling.getRecord().getService().getUser().getName() : "-";
-            String date = refueling.getRecord() != null && refueling.getRecord().getRecordDate() != null 
-                    ? refueling.getRecord().getRecordDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-";
-            
+        String sql = "SELECT r.record_id, c.prefix, u.name, rec.record_date, r.gas_station_name, r.liters, r.total_amount, r.price_per_liter " +
+                     "FROM refuelings r " +
+                     "JOIN records rec ON r.record_id = rec.id " +
+                     "JOIN service s ON rec.service_id = s.id " +
+                     "JOIN cars c ON s.car_prefix = c.prefix " +
+                     "JOIN users u ON s.user_registration = u.registration " +
+                     "WHERE rec.record_date >= :start AND rec.record_date <= :end " +
+                     "AND r.is_active = true AND rec.is_active = true " +
+                     "ORDER BY rec.record_date DESC";
+                     
+        List<Object[]> results = entityManager.createNativeQuery(sql)
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .getResultList();
+                
+        return results.stream().map(row -> {
             return com.ipem.api.modules.service.dto.RefuelingReportDTO.builder()
-                    .id(refueling.getRecordId())
-                    .carPrefix(carPrefix)
-                    .technicianName(technicianName)
-                    .date(date)
-                    .gasStationName(refueling.getGasStationName() != null ? refueling.getGasStationName() : "-")
-                    .liters(refueling.getLiters() != null ? refueling.getLiters() : 0.0f)
-                    .totalAmount(refueling.getTotalAmount() != null ? String.format("R$ %.2f", refueling.getTotalAmount()) : "R$ 0,00")
-                    .pricePerLiter(refueling.getPricePerLiter() != null ? String.format("R$ %.2f", refueling.getPricePerLiter()) : "R$ 0,00")
+                    .id(((Number) row[0]).longValue())
+                    .carPrefix(row[1] != null ? row[1].toString() : "-")
+                    .technicianName(row[2] != null ? row[2].toString() : "-")
+                    .date(row[3] != null ? ((java.sql.Timestamp) row[3]).toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-")
+                    .gasStationName(row[4] != null ? row[4].toString() : "-")
+                    .liters(row[5] != null ? ((Number) row[5]).floatValue() : 0.0f)
+                    .totalAmount(row[6] != null ? String.format("R$ %.2f", ((Number) row[6]).doubleValue()) : "R$ 0,00")
+                    .pricePerLiter(row[7] != null ? String.format("R$ %.2f", ((Number) row[7]).doubleValue()) : "R$ 0,00")
                     .build();
         }).toList();
     }
 
     public List<com.ipem.api.modules.service.dto.IncidentReportDTO> getIncidentReportsByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        List<Incident> incidents = incidentRepository.findByCreatedAtBetweenAndIsActiveTrue(start, end);
-        
-        return incidents.stream().map(incident -> {
-            String carPrefix = incident.getService() != null && incident.getService().getCar() != null ? incident.getService().getCar().getPrefix() : "-";
-            String technicianName = incident.getService() != null && incident.getService().getUser() != null ? incident.getService().getUser().getName() : "-";
-            String date = incident.getCreatedAt() != null ? incident.getCreatedAt().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-";
-            
+        String sql = "SELECT i.id, c.prefix, u.name, i.incident_type, i.severity, i.description, i.created_at, i.resolved " +
+                     "FROM incidents i " +
+                     "JOIN service s ON i.service_id = s.id " +
+                     "JOIN cars c ON s.car_prefix = c.prefix " +
+                     "JOIN users u ON s.user_registration = u.registration " +
+                     "WHERE i.created_at >= :start AND i.created_at <= :end " +
+                     "AND i.is_active = true " +
+                     "ORDER BY i.created_at DESC";
+                     
+        List<Object[]> results = entityManager.createNativeQuery(sql)
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .getResultList();
+                
+        return results.stream().map(row -> {
             return com.ipem.api.modules.service.dto.IncidentReportDTO.builder()
-                    .id(incident.getId())
-                    .carPrefix(carPrefix)
-                    .technicianName(technicianName)
-                    .incidentType(incident.getIncidentType() != null ? incident.getIncidentType().name() : "-")
-                    .severity(incident.getSeverity() != null ? incident.getSeverity().name() : "-")
-                    .description(incident.getDescription() != null ? incident.getDescription() : "-")
-                    .date(date)
-                    .status(incident.getResolved() != null && incident.getResolved() ? "Resolvido" : "Aberto")
+                    .id(((Number) row[0]).longValue())
+                    .carPrefix(row[1] != null ? row[1].toString() : "-")
+                    .technicianName(row[2] != null ? row[2].toString() : "-")
+                    .incidentType(row[3] != null ? row[3].toString() : "-")
+                    .severity(row[4] != null ? row[4].toString() : "-")
+                    .description(row[5] != null ? row[5].toString() : "-")
+                    .date(row[6] != null ? ((java.sql.Timestamp) row[6]).toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-")
+                    .status(row[7] != null && ((Boolean) row[7]) ? "Resolvido" : "Aberto")
                     .build();
         }).toList();
     }
 
     public List<com.ipem.api.modules.service.dto.ExpenseReportDTO> getExpenseReportsByDateRange(java.time.LocalDateTime start, java.time.LocalDateTime end) {
-        List<Record> records = recordRepository.findByRecordDateBetweenAndIsActiveTrue(start, end);
-        
-        return records.stream().map(record -> {
-            String carPrefix = record.getService() != null && record.getService().getCar() != null ? record.getService().getCar().getPrefix() : "-";
-            String technicianName = record.getService() != null && record.getService().getUser() != null ? record.getService().getUser().getName() : "-";
-            String date = record.getRecordDate() != null ? record.getRecordDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-";
-            
+        String sql = "SELECT rec.id, c.prefix, u.name, rec.record_type, rec.record_date, rec.note " +
+                     "FROM records rec " +
+                     "JOIN service s ON rec.service_id = s.id " +
+                     "JOIN cars c ON s.car_prefix = c.prefix " +
+                     "JOIN users u ON s.user_registration = u.registration " +
+                     "WHERE rec.record_date >= :start AND rec.record_date <= :end " +
+                     "AND rec.is_active = true " +
+                     "ORDER BY rec.record_date DESC";
+                     
+        List<Object[]> results = entityManager.createNativeQuery(sql)
+                .setParameter("start", start)
+                .setParameter("end", end)
+                .getResultList();
+                
+        return results.stream().map(row -> {
             return com.ipem.api.modules.service.dto.ExpenseReportDTO.builder()
-                    .id(record.getId())
-                    .carPrefix(carPrefix)
-                    .technicianName(technicianName)
-                    .expenseType(record.getRecordType() != null ? record.getRecordType().name() : "Desconhecido")
-                    .date(date)
-                    .note(record.getNote() != null && !record.getNote().isEmpty() ? record.getNote() : "-")
+                    .id(((Number) row[0]).longValue())
+                    .carPrefix(row[1] != null ? row[1].toString() : "-")
+                    .technicianName(row[2] != null ? row[2].toString() : "-")
+                    .expenseType(row[3] != null ? row[3].toString() : "Desconhecido")
+                    .date(row[4] != null ? ((java.sql.Timestamp) row[4]).toLocalDateTime().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm")) : "-")
+                    .note(row[5] != null && !row[5].toString().isEmpty() ? row[5].toString() : "-")
                     .build();
         }).toList();
     }

@@ -1,0 +1,324 @@
+.container-mapa-gestor {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+    width: 100%;
+    margin: 0 auto 28px;
+    min-height: calc(100vh - 150px);
+}
+
+.painel-mapa {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(0, 32, 128, 0.08);
+    box-shadow: 0 18px 38px rgba(1, 19, 70, 0.1);
+    border-radius: 24px;
+    padding: 22px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.mapa-titulo {
+    color: #002080;
+    font-size: 26px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.mapa-container {
+    width: 100%;
+    min-height: 480px;
+    border-radius: 18px;
+    overflow: hidden;
+    border: 1px solid rgba(0, 32, 128, 0.12);
+    position: relative;
+    z-index: 1;
+}
+
+.mapa-legenda {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 18px;
+    margin-top: 14px;
+    padding: 6px 4px 0;
+}
+
+.legenda-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #4d5f7a;
+}
+
+.marcador-novo::before,
+.marcador-pendente::before,
+.marcador-ativo::before {
+    content: "";
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #ffffff;
+    box-shadow: 0 4px 10px rgba(1, 19, 70, 0.18);
+}
+
+.marcador-novo::before { background-color: #ffd700; }
+.marcador-pendente::before { background-color: #ff9800; }
+.marcador-ativo::before { background-color: #4caf50; }
+
+.painel-inferior {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+}
+
+.card-formulario {
+    background: rgba(255, 255, 255, 0.96);
+    border: 1px solid rgba(0, 32, 128, 0.08);
+    box-shadow: 0 18px 38px rgba(1, 19, 70, 0.1);
+    border-radius: 22px;
+    padding: 20px;
+}
+
+.titulo-formulario {
+    color: #002080;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.formulario-chamado-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.campo-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.campo-grupo label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #31405f;
+}
+
+.campo-grupo input,
+.campo-grupo select,
+.campo-grupo textarea {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(0, 32, 128, 0.12);
+    border-radius: 14px;
+    background: #fbfcff;
+    color: #102030;
+    font-size: 14px;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.campo-grupo textarea {
+    min-height: 48px;
+    resize: vertical;
+}
+
+.campo-grupo input:focus,
+.campo-grupo select:focus,
+.campo-grupo textarea:focus {
+    outline: none;
+    border-color: rgba(0, 32, 128, 0.38);
+    background: #ffffff;
+    box-shadow: 0 0 0 4px rgba(13, 54, 177, 0.08);
+}
+
+.campo-cep-linha {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 10px;
+    align-items: center;
+}
+
+.btn-marcar-mapa {
+    min-width: 110px;
+    padding: 12px 14px;
+    border: 1px dashed rgba(0, 32, 128, 0.3);
+    border-radius: 14px;
+    background: #ffffff;
+    color: #002080;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.btn-marcar-mapa:hover {
+    transform: translateY(-1px);
+    border-color: #002080;
+    box-shadow: 0 10px 20px rgba(13, 54, 177, 0.12);
+}
+
+.resumo-localizacao {
+    font-size: 12px;
+    line-height: 1.5;
+    color: #5d6d8a;
+    margin-top: 8px;
+}
+.resumo-localizacao.ativo {
+    color: #0e5b2a;
+    font-weight: 700;
+}
+
+.acoes-formulario {
+    display: flex;
+    gap: 10px;
+    margin-top: 16px;
+    grid-column: 1 / -1;
+}
+
+.btn-criar,
+.btn-limpar {
+    flex: 1;
+    padding: 12px 14px;
+    border: none;
+    border-radius: 14px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.btn-criar {
+    background: linear-gradient(135deg, #002080 0%, #0d36b1 100%);
+    color: #ffffff;
+    box-shadow: 0 12px 24px rgba(13, 54, 177, 0.22);
+}
+
+.btn-criar:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(13, 54, 177, 0.28);
+}
+
+.btn-limpar {
+    background: #e7ebf5;
+    color: #3b4b68;
+}
+
+.btn-limpar:hover {
+    background: #d8deed;
+    transform: translateY(-1px);
+}
+
+/* LISTAGEM DE CHAMADOS */
+.lista-chamados-container {
+    width: 100%;
+}
+
+.lista-header h3 {
+    color: #002080;
+    font-size: 19px;
+    font-weight: 700;
+    margin-bottom: 16px;
+}
+
+.lista-chamados-horizontal {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+}
+
+.card-chamado-horizontal {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.card-header h4 {
+    color: #0f172a;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-block;
+}
+.status-novo { background: #fffdf0; color: #b79500; border: 1px solid #ffecb3; }
+.status-pendente { background: #fff7ed; color: #c05621; border: 1px solid #feebc8; }
+.status-ativo { background: #f0fff4; color: #2f855a; border: 1px solid #c6f6d5; }
+
+.card-body p {
+    color: #5d6d8a;
+    font-size: 13px;
+    margin: 4px 0;
+}
+
+.card-body span {
+    font-weight: 600;
+    color: #31405f;
+}
+
+.card-footer {
+    display: flex;
+    gap: 8px;
+    margin-top: auto;
+    padding-top: 12px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.btn-secundario, .btn-perigo {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-secundario {
+    background: #f1f5f9;
+    color: #475569;
+}
+.btn-secundario:hover { background: #e2e8f0; }
+
+.btn-perigo {
+    background: #fff5f5;
+    color: #e53e3e;
+}
+.btn-perigo:hover { background: #fed7d7; }
+
+.lista-vazia {
+    grid-column: 1 / -1;
+    text-align: center;
+    color: #7b89a3;
+    padding: 26px 10px;
+    font-size: 14px;
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px dashed #cbd5e1;
+}
+
+.popup-mapa strong {
+    color: #1a3c6d;
+}

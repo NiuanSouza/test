@@ -1,88 +1,81 @@
 "use client";
 
-import React, { useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
-import { Input } from "../../../components/Input";
-import { Button } from "../../../components/Button";
+import React, { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { apiClient } from "../../../services/api";
 import { useToast } from "../../../providers/ToastProvider";
-import styles from "../login/Login.module.css"; // Reuse login styles
+import { Loader2 } from "lucide-react";
 
 export default function ResetPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [success, setSuccess] = useState(false);
-  const toast = useToast();
+  const router = useRouter();
+  const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
 
-  const handleReset = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email) {
-      toast.error("Por favor, preencha o e-mail.");
-      return;
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const urlToken = urlParams.get("token");
+    if (urlToken) {
+      setToken(urlToken);
+    } else {
+      showToast("Token não encontrado na URL.", "error");
     }
+  }, [showToast]);
 
-    setIsLoading(true);
+  const handleConfirm = async () => {
+    if (!token) return;
+    setLoading(true);
+
     try {
-      await apiClient.post("/user/reset-password", { email }, { requireAuth: false });
-      setSuccess(true);
-      toast.success("Instruções enviadas para o seu e-mail!");
+      await apiClient.post(`/user/reset-password-confirm`, { token }, { requireAuth: false });
+      showToast("Senha redefinida com sucesso para: Troca123", "success");
+      setTimeout(() => {
+        router.push("/login");
+      }, 2000);
     } catch (error: any) {
-      toast.error(error.message || "Erro ao solicitar redefinição de senha.");
+      showToast(error.message || "Token inválido ou expirado.", "error");
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className={styles.loginForm}>
-      <div className={styles.logoContainer}>
-        <Image 
-          src="/images/logosiva.png" 
-          alt="SIVA Logo" 
-          width={100} 
-          height={100} 
-          className={styles.logo}
-          style={{ width: "auto", height: "auto" }}
-          priority
-        />
-      </div>
-      
-      <h1 className={styles.title}>Recuperar Senha</h1>
-      <p className={styles.subtitle}>Enviaremos instruções para o seu e-mail</p>
-
-      {success ? (
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <p style={{ color: "var(--color-success)", fontWeight: 500 }}>
-            E-mail enviado com sucesso! Verifique sua caixa de entrada.
-          </p>
-          <div style={{ marginTop: "24px" }}>
-            <Link href="/login" style={{ color: "var(--color-primary)", fontWeight: 600 }}>
-              Voltar ao Login
-            </Link>
-          </div>
+    <div className="auth-wrapper">
+      <div className="auth-card" style={{ textAlign: "center" }}>
+        <div className="auth-logo-container">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/img/logosiva.png" alt="Logo SIVA" className="auth-logo" />
         </div>
-      ) : (
-        <form onSubmit={handleReset} className={styles.form}>
-          <Input 
-            label="E-mail" 
-            type="email"
-            value={email} 
-            onChange={(e) => setEmail(e.target.value)} 
-            required 
-          />
-          
-          <Button type="submit" variant="primary" isLoading={isLoading} className={styles.submitBtn}>
-            ENVIAR
-          </Button>
 
-          <div style={{ textAlign: "center", marginTop: "24px" }}>
-            <Link href="/login" style={{ color: "var(--color-text-secondary)", fontSize: "0.9rem" }}>
-              Lembrou da senha? <strong>Voltar ao Login</strong>
-            </Link>
-          </div>
-        </form>
-      )}
+        <h2 style={{ fontSize: "1.25rem", fontWeight: 600, color: "var(--color-primary)", marginBottom: "16px" }}>
+          Redefinição de Senha
+        </h2>
+        
+        <p style={{ color: "var(--color-text-secondary)", marginBottom: "32px", lineHeight: 1.6 }}>
+          Clique no botão abaixo para redefinir sua senha padrão temporária para <strong>Troca123</strong>.
+        </p>
+
+        <button 
+          onClick={handleConfirm} 
+          disabled={!token || loading}
+          className="btn-primary"
+          style={{ marginBottom: "24px" }}
+        >
+          {loading ? <Loader2 size={20} className="animate-spin" style={{ animation: 'spin 1s linear infinite' }} /> : "Confirmar Redefinição"}
+        </button>
+
+        <div className="auth-links" style={{ justifyContent: "center" }}>
+          <span className="auth-link" onClick={() => router.push("/login")}>
+            Voltar ao Login
+          </span>
+        </div>
+      </div>
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 }

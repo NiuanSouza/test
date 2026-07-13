@@ -9,6 +9,9 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "SIVA - Sistema de Gerenciamento",
   description: "Sistema de gerenciamento de chamados e frotas",
+  icons: {
+    icon: "/img/logosiva.png",
+  }
 };
 
 export default function RootLayout({
@@ -17,8 +20,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className={inter.className}>
+    <html lang="pt-BR" suppressHydrationWarning>
+      <head>
+      </head>
+      <body className={inter.className} suppressHydrationWarning>
         <ToastProvider>
           <AuthProvider>
             {children}
