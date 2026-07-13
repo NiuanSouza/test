@@ -1,51 +1,62 @@
-## SIVA Back-end - Sistema Integrado de Viaturas e Atendimentos ##
+# SIVA - Sistema Integrado de Viaturas e Atendimentos
 
+O **SIVA** é um sistema completo (Full-Stack) focado no gerenciamento de frotas, controle de viagens, rastreamento de chamados e manutenção preventiva de veículos. O sistema conta com painéis gerenciais, mapas de acompanhamento em tempo real e controle de acessos (Gestor vs. Técnico).
 
-Este é o back-end do **SIVA**, responsável por toda a lógica de negócio, segurança e integração com as bases de dados do IPEM. A API fornece os recursos necessários para o controle de frota, gestão de condutores e monitoramento de manutenção preventiva.
+> **Aviso de Origem:** Este projeto é um *fork* e uma evolução independente do repositório original desenvolvido para fins acadêmicos na FATEC. O projeto original pode ser encontrado aqui: [Bifrost-Connect/API3-BACK](https://github.com/Bifrost-Connect/API3-BACK).
 
 ---
 
-## Arquitetura e Tecnologias
+## 🚀 Arquitetura do Projeto
 
-A API foi construída com foco em performance e integridade dos dados, utilizando:
+Este repositório é um monorepo contendo tanto o cliente web (Front-End) quanto a API (Back-End).
 
-- **Linguagem:** Java
-- **Framework:** Spring Boot (ou o framework Java de sua preferência)
-- **Bancos de Dados:** - **MySQLWorkbench:** Base principal para dados institucionais e legados.
-  - **MySQL:** Gestão de logs rápidos e dados transacionais de movimentação.
-- **Segurança:** Autenticação e controle de níveis de acesso (Admin/Operador).
-- **Padronização:** RESTful API com retornos em JSON.
+### 🖥️ Front-End
+Interface rica e responsiva focada na experiência do usuário (Mobile First) e gestores de frota.
+- **Tecnologias:** React, Next.js (App Router), TypeScript, CSS Modular.
+- **Mapas:** Leaflet e React-Leaflet com integração ao OSRM para roteamento e visualização de trajetos.
+- **Estrutura:** Localizado na pasta `/Front-End`.
 
-## Estrutura do Projeto
+### ⚙️ Back-End
+Motor de regras de negócio, autenticação JWT, integração com o banco de dados e auditorias.
+- **Tecnologias:** Java 17+, Spring Boot, Spring Security.
+- **Banco de Dados:** MySQL (com migrações Flyway).
+- **Estrutura:** Localizado na pasta `/Back-End`.
 
-- **`/src/main/java/com/siva/controller`**: Endpoints da API (Rotas de acesso).
-- **`/src/main/java/com/siva/attendance`**: Regras de negócio (Cálculos de manutenção, validações).
-- **`/src/main/java/com/siva/repository`**: Camada de persistência (Queries Oracle/MySQL).
-- **`/src/main/java/com/siva/model`**: Entidades do banco de dados (Viatura, Motorista, Viagem).
-- **`/src/main/resources`**: Configurações de ambiente e conexões com o DB.
+---
 
-## Funcionalidades do Back-end
+## 🛠️ Funcionalidades Principais
 
-- **API de Frota**: CRUD completo de veículos com validação de placa e Renavam.
-- **Motor de Manutenção**: Lógica que calcula a próxima revisão com base no hodômetro atualizado.
-- **Gestão de Viagens**: Processamento de check-out e check-in, garantindo que uma viatura não saia sem o retorno da viagem anterior.
-- **Integração de Bases**: Sincronização entre tabelas do Oracle e MySQL conforme a necessidade do módulo.
-- **Relatórios Gerenciais**: Agregação de dados para geração de indicadores de consumo e quilometragem.
+1. **Painel de Controle (Dashboard):** Visão geral instantânea da frota, com KPIs e gráficos de atendimento.
+2. **Mapa de Ocorrências:** Rastreio visual em tempo real dos chamados abertos e frotas em trânsito.
+3. **Gestão de Veículos e Motoristas:** Cadastro completo (placa, Renavam) e histórico de manutenções.
+4. **Viagens e Check-ins:** Controle de odômetro de saída (Check-out) e retorno (Check-in).
+5. **Auditoria:** Registro estrito de log sobre quem modificou o que no sistema.
 
-## Requisitos de Instalação
+---
 
-### Pré-requisitos
-- JDK 17 ou superior
-- Maven ou Gradle
-- Acesso aos bancos de dados Oracle e MySQL configurados
+## 📦 Como Rodar o Projeto
 
-### Configuração
-1. Clone o repositório:
+### 1. Back-End (Spring Boot)
+1. Certifique-se de ter o **Java 17** e o **Maven** instalados.
+2. Tenha um servidor **MySQL** rodando.
+3. Navegue até a pasta `Back-End` e edite o arquivo `application.properties` (ou `.env`) com as credenciais do seu banco.
+4. Execute o projeto usando sua IDE ou via terminal:
    ```bash
-   git clone [https://github.com/wizard-beard/siva-backend.git](https://github.com/wizard-beard/siva-backend.git)
-| **Padronização** | Husky + Commitlint | Organização de mensagens de commit |
+   mvn spring-boot:run
+   ```
 
-📊 Painel de Controle (Dashboard)
-Estatísticas de Uso: Gráficos de consumo de combustível e eficiência da frota.
+### 2. Front-End (Next.js)
+1. Certifique-se de ter o **Node.js** (v18+) e o **pnpm** instalados.
+2. Navegue até a pasta `Front-End`.
+3. Instale as dependências:
+   ```bash
+   pnpm install
+   ```
+4. Inicie o servidor de desenvolvimento:
+   ```bash
+   pnpm run dev
+   ```
+5. Acesse `http://localhost:3000` no seu navegador.
 
-Histórico de Condutores: Rastreabilidade total de multas e ocorrências por motorista.
+---
+**Ambiente de Demonstração:** Por padrão, a interface possui um banner com os dados de login de demonstração (admin / tecnico) para facilitar testes rápidos e navegação pelas telas.

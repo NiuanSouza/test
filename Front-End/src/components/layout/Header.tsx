@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { clearStoredToken } from "../../lib/jwt";
 import { Menu, LogOut, User } from "lucide-react";
 
@@ -9,6 +9,7 @@ import { apiClient } from "../../services/api";
 
 export function Header({ onMenuClick }: { onMenuClick: () => void }) {
   const pathname = usePathname();
+  const router = useRouter();
   const [userName, setUserName] = useState("Usuário");
   const [userRole, setUserRole] = useState("");
   const [userPhoto, setUserPhoto] = useState<string | null>(null);
@@ -64,7 +65,14 @@ export function Header({ onMenuClick }: { onMenuClick: () => void }) {
       </div>
 
       <div className="header-actions">
-        <div className="user-profile">
+        <div 
+          className="user-profile" 
+          onClick={() => router.push("/settings")} 
+          style={{ cursor: "pointer", transition: "opacity 0.2s" }}
+          onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")}
+          onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}
+          title="Acessar configurações"
+        >
           <div className="user-info">
             <span className="user-name">{userName}</span>
             <span className="user-role">{userRole}</span>
