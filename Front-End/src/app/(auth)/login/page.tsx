@@ -132,12 +132,12 @@ export default function LoginPage() {
         <p style={{ margin: "10px 0" }}>Este é um sistema de testes. Os dados são <strong>apagados automaticamente após 24 horas</strong>.</p>
         <div style={{ marginTop: "16px", padding: "12px", backgroundColor: "white", borderRadius: "8px", border: "1px solid #dcfce7", display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: "10px" }}>
           <div>
-            <span style={{ fontSize: "12px", color: "#15803d", textTransform: "uppercase", fontWeight: "bold" }}>Acesso Gestor</span>
-            <p style={{ margin: "4px 0", fontSize: "15px", fontFamily: "monospace" }}>admin / admin</p>
+            <span style={{ fontSize: "12px", color: "#15803d", textTransform: "uppercase", fontWeight: "bold" }}>Matrícula Gestor</span>
+            <p style={{ margin: "4px 0", fontSize: "15px", fontFamily: "monospace" }}>10006</p>
           </div>
           <div>
-            <span style={{ fontSize: "12px", color: "#15803d", textTransform: "uppercase", fontWeight: "bold" }}>Acesso Técnico</span>
-            <p style={{ margin: "4px 0", fontSize: "15px", fontFamily: "monospace" }}>tecnico / tecnico</p>
+            <span style={{ fontSize: "12px", color: "#15803d", textTransform: "uppercase", fontWeight: "bold" }}>Senha Padrão</span>
+            <p style={{ margin: "4px 0", fontSize: "15px", fontFamily: "monospace" }}>Troca123</p>
           </div>
         </div>
       </div>

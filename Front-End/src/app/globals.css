@@ -58,8 +58,8 @@ body {
   min-height: 100vh;
   width: 100%;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  flex-direction: row;
+  gap: 40px;
   align-items: center;
   justify-content: center;
   background-color: #1F255F; /* Trazendo de volta a cor exata do antigo */
@@ -163,7 +163,19 @@ body {
 .auth-links {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px;
+  align-items: center;
+  gap: 16px;
+  margin-top: 16px;
+  font-size: 0.875rem;
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 768px) {
+  .auth-wrapper {
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px 0;
+  }
 }
 
 .auth-link {
