@@ -245,7 +245,17 @@ export default function HomePage() {
       await apiClient.post(`/service/${activeService.serviceId}/fuel`, payload);
       showToast("Abastecimento registrado com sucesso!", "success");
       setActiveActionModal("NONE");
-      setFuelData({ liters: "", pricePerLiter: "", invoice: "", recordKm: "", date: new Date().toISOString().split("T")[0], time: new Date().toTimeString().slice(0,5) });
+      setFuelData({ 
+        liters: "", 
+        pricePerLiter: "", 
+        invoice: "", 
+        recordKm: "", 
+        date: new Date().toISOString().split("T")[0], 
+        time: new Date().toTimeString().slice(0,5),
+        oilChangeDate: "",
+        lastOilChangeKm: "",
+        nextOilChangeKm: ""
+      });
     } catch (error: any) {
       showToast(error.message || "Erro ao registrar abastecimento.", "error");
     }
